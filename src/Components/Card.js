@@ -32,15 +32,15 @@ export default function MediaCard(props) {
             {props.name}
           </Typography>
           <Typography variant="body2" color="textSecondary" component="p">
-          {"Uploaded on " + props.date}
+            {"Uploaded on " + props.date}
           </Typography>
           <Typography variant="body2" color="textSecondary" component="p" className="metadatasearch" style={{display: "none"}}>
-          {props.predictions + " " + props.text + " " + props.name}
+            {props.predictions + " " + props.text + " " + props.name}
           </Typography>
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button size="small" color="primary">
+        <Button size="small" color="primary" onClick={()=>props.onDetails()}>
           Details
         </Button>
         <Button size="small" color="primary" onClick={()=>props.onHome()}>

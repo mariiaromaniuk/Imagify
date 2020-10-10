@@ -26,15 +26,19 @@ import ImageIcon from '@material-ui/icons/Image';
 import TextField from '@material-ui/core/TextField';
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import Tooltip from '@material-ui/core/Tooltip';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import SnackBar from './SnackBar';
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
+import "firebase/firestore";
 import { createWorker } from 'tesseract.js';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import '@tensorflow/tfjs-backend-cpu';
 import '../Image.css';
 import Card from './Card';
+import clsx from 'clsx';
 
 const drawerWidth = 240;
 
@@ -73,6 +77,12 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  list: {
+    width: 300,
+  },
+  fullList: {
+    width: 'auto',
+  },
 }));
 
 export default function ResponsiveDrawer(props) {
@@ -82,13 +92,23 @@ export default function ResponsiveDrawer(props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-
+  //data is for storing details of images, categories stores the labels of left sidebar, state for right sidebar, progress -> progress bar, msg -> trigger snackbar 
   const [data, setData] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [state, setState] = useState({
+    right: false,
+  });
+  const [progress, setProgress] = useState({disp: false})
+  const [msg, setMsg] = useState({disp: false});
 
-  // useEffect(()=>console.log(data),[data]);
-
-  // load user data after component loads
+  const toggleDrawer = (anchor, open, name, url, predictions, text) => (event) => {
+    // if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+    //   return;
+    // }
+    setState({right: open, name: name, url: url, predictions: predictions, text: text });
+  };
+  
+  //load user data after component loads
   useEffect(()=>{
     var db = firebase.firestore();
     var userId=firebase.auth().currentUser.uid;
@@ -96,20 +116,23 @@ export default function ResponsiveDrawer(props) {
       if (doc.exists) {
           console.log("Document data:", doc.data());
           var tempCategories = [];
-          for (var i = 0; i < doc.data().img.length; i++){
+          for(var i=0;i<doc.data().img.length;i++)
+          {
             tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
           }
-          tempCategories = Array.from(new Set(tempCategories));
+          tempCategories=Array.from(new Set(tempCategories));
           setCategories(tempCategories);
           setData(doc.data().img);
-          var userId = firebase.auth().currentUser.uid;
+          var userId=firebase.auth().currentUser.uid;
+          //register onChange listener
           db.collection("images").doc(userId)
             .onSnapshot(function(doc) {
               var tempCategories = [];
-              for (var i = 0; i < doc.data().img.length; i++){
+              for(var i=0;i<doc.data().img.length;i++)
+              {
                 tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
               }
-              tempCategories = Array.from(new Set(tempCategories));
+              tempCategories=Array.from(new Set(tempCategories));
               setCategories(tempCategories);
               setData(doc.data().img);
             });
@@ -119,13 +142,15 @@ export default function ResponsiveDrawer(props) {
           db.collection("images").doc(userId).set({
             img: ""
           }).then(function() {
+            //register onChange listener
             db.collection("images").doc(userId)
             .onSnapshot(function(doc) {
               var tempCategories = [];
-              for(var i = 0;i < doc.data().img.length; i++){
+              for(var i=0;i<doc.data().img.length;i++)
+              {
                 tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
               }
-              tempCategories = Array.from(new Set(tempCategories));
+              tempCategories=Array.from(new Set(tempCategories));
               setCategories(tempCategories);
               setData(doc.data().img);
             });
@@ -142,7 +167,6 @@ export default function ResponsiveDrawer(props) {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-  
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -151,10 +175,10 @@ export default function ResponsiveDrawer(props) {
     setAnchorEl(null);
   };
 
+
   const drawer = (
     <div>
       <div className={classes.toolbar} />
-      <Divider />
       <List>
         <ListItem button>
             <ListItemIcon>
@@ -165,54 +189,100 @@ export default function ResponsiveDrawer(props) {
       </List>
       <Divider />
       <List>
-      {categories.map((text, index) => (
+        {categories.map((text, index) => (
           <ListItem button key={text} onClick={()=>{document.getElementById("search").value=text;document.getElementById("search").focus();search(text, true)}}>
             <ListItemText primary={text} />
           </ListItem>
         ))}
       </List>
       <Divider />
+      
+    </div>
+  );
+
+  const list = (anchor) => (
+    <div className={clsx(classes.list, {
+      [classes.fullList]: anchor === 'top' || anchor === 'bottom',
+    })}>
+    <div
+      className={clsx(classes.list, {
+        [classes.fullList]: anchor === 'top' || anchor === 'bottom',
+      })}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+      <Divider />
+      <List>
+          <ListItem button>
+          <img src={state.url} width="150px" height="150px" alt={state.name} style={{marginLeft: "60px", border: "2px solid black"}} />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary={"Name: "+ state.name} />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary={"Predictions: "+ state.predictions} />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary={"Text: "+ state.text} />
+          </ListItem>
+          
+      </List>
+    </div>
+    <Divider />
+    <ListItem button>
+    <a href={state.url} target="_blank" rel="noopener noreferrer"><ListItemText primary="View Image!" /></a>
+    </ListItem>
     </div>
   );
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
-  function uploadData(url, file, text, predictions){
-    console.log(url);console.log(text);console.log(predictions);
-    var str=predictions[0].className;
-    for (var i = 1; i < predictions.length; i++)
-    str = str + ", " + predictions[i].className;
-    var d = new Date();
-    var m = d.getMonth()+1;
-    d = d.getDate() + "-" + m + "-" + d.getFullYear();
-    const temp = {
-      url: url,
-      text: text,
-      predictions: str,
-      name: file.name,
-      date: d
-    };
-    const tempData = [...data];
-    tempData.push(temp);
-    setData(tempData);
-    var db = firebase.firestore();
-    var userId = firebase.auth().currentUser.uid;
-    db.collection("images").doc(userId).set({
-      img: tempData
-    }).then(function() {
-      console.log("Document successfully written!");
-  })
-  .catch(function(error) {
-      console.error("Error writing document: ", error);
-  });
-  }
+  // upload data to firebase
+function uploadData(url, file, text, predictions)
+{
+  console.log(url);console.log(text);console.log(predictions);
+  var str=predictions[0].className;
+  for(var i=1;i<predictions.length;i++)
+  str=str+", "+ predictions[i].className;
+  var d = new Date();
+  var m=d.getMonth()+1;
+  d = d.getDate()+"-"+m+"-"+d.getFullYear();
+  const temp={
+    url: url,
+    text: text,
+    predictions: str,
+    name: file.name,
+    date: d
+  };
+  const tempData=[...data];
+  tempData.push(temp);
+  setData(tempData);
+  var db = firebase.firestore();
+  var userId=firebase.auth().currentUser.uid;
+  db.collection("images").doc(userId).set({
+    img: tempData
+  }).then(function() {
+    console.log("Document successfully written!");
+    setMsg({disp: true, severity: "success", message: "Data analysed successfully!"});
+    setProgress({disp: false});
+})
+.catch(function(error) {
+    console.error("Error writing document: ", error);
+    setMsg({disp: true, severity: "error", message: "Error analysing Image!"});
+    setProgress({disp: false});
+});
 
-  function search(text, searchType){
+}
+
+function search(text, searchType)
+{
   // console.log(text);
-  var docs = document.getElementsByClassName("metadatasearch");
-  var holder = document.getElementsByClassName("metadataholder");
+  var docs=document.getElementsByClassName("metadatasearch");
+  var holder=document.getElementsByClassName("metadataholder");
   // console.log(docs);
-  for (var i = 0; i < docs.length; i++){
+  for(var i=0;i<docs.length;i++)
+  {
     var txtValue = docs[i].textContent || docs[i].innerText;
     var textArray=text.split(', ');
     var res=false;
@@ -222,7 +292,7 @@ export default function ResponsiveDrawer(props) {
       if(txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
       res=true;
       else 
-      res=false;
+      {res=false;break;}
     }
     else
     {
@@ -237,74 +307,85 @@ export default function ResponsiveDrawer(props) {
   }
 }
 
-function searchImage(predictions){
+function searchImage(predictions)
+{
+  setProgress({disp: false});
   console.log(predictions);
-  var searchStr = predictions[0].className;
-  for(var i = 1;i < predictions.length; i++)
-  searchStr += ", " + predictions[i].className;
-  document.getElementById("search").value = searchStr;
+  var searchStr=predictions[0].className;
+  for(var i=1;i<predictions.length;i++)
+  searchStr+=", "+predictions[i].className;
+  document.getElementById("search").value=searchStr;
   search(searchStr, false);
+  // for(var i=0;i<)
 }
-  
-  function ocr(url, file){
-      console.log("hi from ocr()");
-      const worker = createWorker({
-      // logger: m => console.log(m)
+
+function ocr(url, file)
+{
+    setProgress({disp: true, msg: "Performing OCR on the image!"});
+    console.log("hi from ocr()");
+    const worker = createWorker({
+    // logger: m => console.log(m)
+    });
+
+    (async () => {
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const { data: { text } } = await worker.recognize(url);
+    // console.log(text);
+    await worker.terminate();
+    label(url, file, text, true);
+    })();
+}
+
+async function label(url, file, text, searchType) 
+{
+  setProgress({disp: true, msg: "Classifying the Image!"});
+  console.log("hi from label()");
+  console.log(file);
+  //convert a fFile() to Image() for Tensorflow JS
+  var ur = URL.createObjectURL(file),img = new Image();                         
+  img.onload = function() {                    
+      URL.revokeObjectURL(this.src);             
+    };
+  img.src = ur;  
+  const model = await mobilenet.load();
+
+// Classify the image.
+const predictions = await model.classify(img);
+// console.log(predictions);
+if(!searchType)
+searchImage(predictions);
+else
+uploadData(url, file, text, predictions);
+}
+
+function uploadFile(file)
+{
+    setProgress({disp: true, msg: "Upload Started!"});
+    var userId=firebase.auth().currentUser.uid;
+    var storageRef = firebase.storage().ref();
+    var ImageRef = storageRef.child(userId+'/'+file.name);
+    ImageRef.put(file).then(function(snapshot) {
+        console.log('Uploaded a blob or file!');
+        ImageRef.getDownloadURL().then(function(url){
+            console.log(url);
+            ocr(url,file);
+        })
       });
-  
-      (async () => {
-      await worker.load();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(url);
-      // console.log(text);
-      await worker.terminate();
-      label(url, file, text, true);
-      })();
-  }
+}
 
-  async function label(url, file, text, searchType) {
-      console.log("hi from label()");
-      console.log(file);
-      //convert a fFile() to Image() for Tensorflow JS
-      var ur = URL.createObjectURL(file),img = new Image();  
-      img.onload = function () {
-          URL.revokeObjectURL(this.src);
-      };
-      img.src = ur;
-      const model = await mobilenet.load();
-
-      // Classify the image.
-      const predictions = await model.classify(img);
-      // console.log(predictions);
-      if (!searchType)
-          searchImage(predictions);
-      else
-          uploadData(url, file, text, predictions);
-  }
-  
-  function uploadFile(file){
-      var userId=firebase.auth().currentUser.uid;
-      var storageRef = firebase.storage().ref();
-      var ImageRef = storageRef.child(userId+'/'+file.name);
-      ImageRef.put(file).then(function(snapshot) {
-          console.log('Uploaded a blob or file!');
-          ImageRef.getDownloadURL().then(function(url){
-              console.log(url);
-              ocr(url,file);
-          })
-        });
-  }
-  
-
-  function selectFiles(){
+function selectFiles()
+{
     var files = document.getElementById("selectFiles").files;
-    for (var i = 0;i < files.length; i++){
+    for(var i=0;i<files.length;i++)
+    {
         uploadFile(files[i]);
     }
 }
 
-function signOut(){
+function signOut()
+{
   firebase.auth().signOut().then(function() {
     // Sign-out successful.
   }).catch(function(error) {
@@ -312,24 +393,31 @@ function signOut(){
   });
 }
 
-function deleteItem(index){
+function deleteItem(index)
+{
   console.log("hi from delete");
-  var temp = [...data];
+  var temp=[...data];
+  var tempData=temp[index].name;
   temp.splice(index,1);
   setData(temp);
   var db = firebase.firestore();
-  var userId = firebase.auth().currentUser.uid;
+  var userId=firebase.auth().currentUser.uid;
   db.collection("images").doc(userId).set({
     img: temp
   }).then(function() {
     console.log("Document successfully written!");
+    firebase.storage().ref().child(userId+"/"+tempData).delete().then(function(){
+      setMsg({disp: true, severity: "success", message: "Data deleted successfully!"});
+    });
 })
 .catch(function(error) {
     console.error("Error writing document: ", error);
+    setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
 });
 }
 
   return (
+    <div>
     <div className={classes.root}>
       <CssBaseline />
       <AppBar position="fixed" className={classes.appBar}>
@@ -375,8 +463,9 @@ function deleteItem(index){
                 <MenuItem onClick={signOut} >Sign Out</MenuItem>
               </Menu>
             </div>
-          </Toolbar>
+        </Toolbar>
       </AppBar>
+      
       <nav className={classes.drawer} aria-label="mailbox folders">
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden smUp implementation="css">
@@ -411,50 +500,66 @@ function deleteItem(index){
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Typography paragraph>
-        <Paper>
+
+          <Paper>
           <div >
             <Grid container spacing={1} alignItems="flex-end" justify="center">
               <Grid item>
                 <ImageSearchIcon />
               </Grid>
               <Grid item>
-                 <TextField id="search" label="Please enter a search query" style={{width: "500px"}} onKeyUp={event=>search(event.target.value, true)} />
-
-                 <input accept="image/*" style={{display: "none"}} id="icon-button-file" type="file" onChange={event=>label("", event.target.files[0], "", false)} />
-
-                 <label htmlFor="icon-button-file">
+                <TextField id="search" label="Search" placeholder="Please enter a search query" InputLabelProps={{shrink: true,}} style={{width: "500px"}} onKeyUp={event=>search(event.target.value, true)} />
+                <input accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} id="icon-button-file" type="file" onChange={event=>label("", event.target.files[0], "", false)} />
+                <label htmlFor="icon-button-file">
                   <IconButton color="primary" aria-label="upload picture" component="span">
                   <Tooltip title="Search similar Images"><PhotoCamera /></Tooltip>
                   </IconButton>
-                 </label>
-
+                </label>
               </Grid>
+                <Paper>
+                  <i>Please enter a search query in the search field(multiple query should be comma separated, eg: `cat, grass` with no trailing commas)</i>
+                </Paper>
             </Grid>
           </div>
           </Paper>  
-          <br/><br/>
-         <Grid item xs={12}>
-            <Grid container spacing={4}>
-                {
+          <br/><br/>    
+          <Paper>
+            {progress.disp && <div>
+                  <LinearProgress color="secondary" />
+                  <i>{progress.msg}</i>
+              </div>
+            }
+          </Paper>      
+          <br />
+              <Grid item xs={12}>
+                <Grid container spacing={4}>
+                  {
                   data.length?
                   data.map((inputfield, index) => (
                     <Grid key={index} item className="metadataholder">
                       <Paper className={classes.paper} >
-                        <Card name={inputfield.name} url={inputfield.url} date={inputfield.date} predictions={inputfield.predictions} text={inputfield.text} onHome={()=>deleteItem(index)}/>
-                     </Paper >
-                  </Grid>
+                        <Card name={inputfield.name} url={inputfield.url} date={inputfield.date} predictions={inputfield.predictions} text={inputfield.text} onHome={()=>deleteItem(index)} onDetails={toggleDrawer("right", true, inputfield.name, inputfield.url, inputfield.predictions, inputfield.text)} />
+                      </Paper >
+                    </Grid>
                   ))
                   : <p>No Images found</p>
                 }
-            </Grid>
-         </Grid>
-         <input type="file" id="selectFiles" multiple accept="image/*" style={{display: "none"}} onChange={()=>selectFiles(this)} />
+                </Grid>
+              </Grid>
+            
 
-         <Fab color="primary" aria-label="add" id="upload" onClick={()=>{document.getElementById("selectFiles").click()}}>
+        <input type="file" id="selectFiles" accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} onChange={()=>selectFiles(this)} />
+            
+        <Fab color="primary" aria-label="add" id="upload" onClick={()=>{document.getElementById("selectFiles").click()}}>
             <CloudUploadIcon /> 
-         </Fab>        
+        </Fab>        
       </Typography>
       </main>
+      <Drawer anchor={"right"} open={state["right"]} onClose={toggleDrawer("right", false)}>
+            {list("right")}
+      </Drawer>
+    </div>
+    {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={()=>{setMsg({disp: false})}} />}
     </div>
   );
 };

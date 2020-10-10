@@ -5,11 +5,8 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
@@ -25,9 +22,8 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    // backgroundImage: 'url(https://source.unsplash.com/random)',
-    // backgroundRepeat: 'no-repeat',
-    backgroundImage: '../../public/4035541.jpg',
+    backgroundImage: 'url(https://source.unsplash.com/1600x900/?nature)',
+    backgroundRepeat: 'no-repeat',
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
     backgroundSize: 'cover',
@@ -59,23 +55,30 @@ export default function SignInSide() {
     disp: false
   });
 
-  function signIn(){
+  //log in an user to the app
+  function signIn()
+  {
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
     firebase.auth().signInWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error) {
       // Handle Errors here.
       var errorCode = error.code;
       var errorMessage = error.message;
+      //Progress Bar
       setMsg({
         disp: true,
         message: errorMessage,
         severity: "error"
       });
-      document.getElementById("progress").innerHTML="";
+      ReactDOM.render("", document.getElementById("progress"));
     });
   }
 
-  function register(){
-    if (document.getElementById("password").value!==document.getElementById("password1").value){
+  //sign up a user for the app
+  function register()
+  {
+    //Progress Bar
+    if(document.getElementById("password").value!==document.getElementById("password1").value)
+    {
       setMsg({
         disp: true,
         severity: "error",
@@ -93,12 +96,14 @@ export default function SignInSide() {
         message: errorMessage,
         severity: "error"
       });
-      document.getElementById("progress").innerHTML="";
+      ReactDOM.render("", document.getElementById("progress"));
     });
   }
 
-  function signUp(){
-    if (mode)
+  //UI controller 
+  function signUp()
+  {
+    if(mode)
     setMode(false);
     else
     setMode(true);
@@ -111,6 +116,10 @@ export default function SignInSide() {
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
+          
+          <Typography variant="h6" gutterBottom>
+            <i>Welcome to Image Repository, your own library of images, which helps you to add, delete and classify images into groups!</i>
+          </Typography>
           <Avatar className={classes.avatar}>
             <Typography component="h1" variant="h5">
 
@@ -166,7 +175,7 @@ export default function SignInSide() {
               {mode && "Sign In"}
               {!mode && "Sign Up"}
             </Button>
-
+            
             <Grid item>
                 <Link onClick={signUp} variant="body2">
                   {mode && "Don't have an account? Sign Up"}
@@ -176,9 +185,10 @@ export default function SignInSide() {
           </form>
         </div>
       </Grid>
+      
     </Grid>
 
     {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={()=>{setMsg({disp: false})}} />}
     </div>
   );
-} 
+}
