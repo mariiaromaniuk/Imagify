@@ -22,12 +22,12 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    backgroundImage: 'url(https://source.unsplash.com/1600x900/?nature)',
+    backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-64.jpg)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
     backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    backgroundPosition: 'left',
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.secondary.main,
   },
   form: {
-    width: '100%', // Fix IE 11 issue.
+    width: '100%', 
     marginTop: theme.spacing(1),
   },
   submit: {
@@ -55,15 +55,14 @@ export default function SignInSide() {
     disp: false
   });
 
-  //log in an user to the app
-  function signIn()
-  {
+  // Log in an user to the app
+  function signIn(){
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
-    firebase.auth().signInWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error) {
-      // Handle Errors here.
+    firebase.auth().signInWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error){
+      // Handle Errors here
       var errorCode = error.code;
       var errorMessage = error.message;
-      //Progress Bar
+      // Progress Bar
       setMsg({
         disp: true,
         message: errorMessage,
@@ -73,12 +72,10 @@ export default function SignInSide() {
     });
   }
 
-  //sign up a user for the app
-  function register()
-  {
-    //Progress Bar
-    if(document.getElementById("password").value!==document.getElementById("password1").value)
-    {
+  // Sign up a user for the app
+  function register(){
+    // Progress Bar
+    if (document.getElementById("password").value!==document.getElementById("password1").value){
       setMsg({
         disp: true,
         severity: "error",
@@ -87,8 +84,8 @@ export default function SignInSide() {
       return;
     }
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
-    firebase.auth().createUserWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error) {
-      // Handle Errors here.
+    firebase.auth().createUserWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error){
+      // Handle Errors here
       var errorCode = error.code;
       var errorMessage = error.message;
       setMsg({
@@ -100,13 +97,10 @@ export default function SignInSide() {
     });
   }
 
-  //UI controller 
-  function signUp()
-  {
-    if(mode)
-    setMode(false);
-    else
-    setMode(true);
+  // UI controller 
+  function signUp(){
+    if(mode) setMode(false);
+    else setMode(true);
   }
 
   return (
@@ -118,7 +112,7 @@ export default function SignInSide() {
         <div className={classes.paper}>
           
           <Typography variant="h6" gutterBottom>
-            <i>Welcome to Image Repository, your own library of images, which helps you to add, delete and classify images into groups!</i>
+            <i>Welcome to Image Repository, your own library of images!</i>
           </Typography>
           <Avatar className={classes.avatar}>
             <Typography component="h1" variant="h5">
@@ -168,7 +162,7 @@ export default function SignInSide() {
             <Button
               fullWidth
               variant="contained"
-              color="primary"
+              color="455A64"
               className={classes.submit}
               onClick={mode? signIn : register}
             >
@@ -185,7 +179,6 @@ export default function SignInSide() {
           </form>
         </div>
       </Grid>
-      
     </Grid>
 
     {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={()=>{setMsg({disp: false})}} />}

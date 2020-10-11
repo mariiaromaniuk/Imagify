@@ -111,13 +111,12 @@ export default function ResponsiveDrawer(props) {
   //load user data after component loads
   useEffect(()=>{
     var db = firebase.firestore();
-    var userId=firebase.auth().currentUser.uid;
+    var userId = firebase.auth().currentUser.uid;
     db.collection("images").doc(userId).get().then(function(doc) {
       if (doc.exists) {
           console.log("Document data:", doc.data());
           var tempCategories = [];
-          for(var i=0;i<doc.data().img.length;i++)
-          {
+          for (var i = 0; i < doc.data().img.length; i++){
             tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
           }
           tempCategories=Array.from(new Set(tempCategories));
@@ -239,8 +238,7 @@ export default function ResponsiveDrawer(props) {
   const container = window !== undefined ? () => window().document.body : undefined;
 
   // upload data to firebase
-function uploadData(url, file, text, predictions)
-{
+function uploadData(url, file, text, predictions){
   console.log(url);console.log(text);console.log(predictions);
   var str=predictions[0].className;
   for(var i=1;i<predictions.length;i++)
@@ -275,20 +273,17 @@ function uploadData(url, file, text, predictions)
 
 }
 
-function search(text, searchType)
-{
+function search(text, searchType){
   // console.log(text);
-  var docs=document.getElementsByClassName("metadatasearch");
-  var holder=document.getElementsByClassName("metadataholder");
+  var docs = document.getElementsByClassName("metadatasearch");
+  var holder = document.getElementsByClassName("metadataholder");
   // console.log(docs);
-  for(var i=0;i<docs.length;i++)
-  {
+  for (var i = 0; i < docs.length; i++){
     var txtValue = docs[i].textContent || docs[i].innerText;
     var textArray=text.split(', ');
-    var res=false;
-    for(var j=0;j<textArray.length;j++)
-    if(searchType)
-    {
+    var res = false;
+    for (var j = 0; j < textArray.length; j++)
+    if (searchType){
       if(txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
       res=true;
       else 
@@ -307,8 +302,7 @@ function search(text, searchType)
   }
 }
 
-function searchImage(predictions)
-{
+function searchImage(predictions){
   setProgress({disp: false});
   console.log(predictions);
   var searchStr=predictions[0].className;
@@ -316,30 +310,27 @@ function searchImage(predictions)
   searchStr+=", "+predictions[i].className;
   document.getElementById("search").value=searchStr;
   search(searchStr, false);
-  // for(var i=0;i<)
 }
 
-function ocr(url, file)
-{
-    setProgress({disp: true, msg: "Performing OCR on the image!"});
-    console.log("hi from ocr()");
-    const worker = createWorker({
-    // logger: m => console.log(m)
-    });
+// function ocr(url, file){
+//     setProgress({disp: true, msg: "Performing OCR on the image!"});
+//     console.log("hi from ocr()");
+//     const worker = createWorker({
+//       logger: m => console.log(m)
+//     });
 
-    (async () => {
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    const { data: { text } } = await worker.recognize(url);
-    // console.log(text);
-    await worker.terminate();
-    label(url, file, text, true);
-    })();
-}
+//     (async () => {
+//     await worker.load();
+//     await worker.loadLanguage('eng');
+//     await worker.initialize('eng');
+//     const { data: { text } } = await worker.recognize(url);
+//     console.log(text);
+//     await worker.terminate();
+//     label(url, file, text, true);
+//     })();
+// }
 
-async function label(url, file, text, searchType) 
-{
+async function label(url, file, text, searchType) {
   setProgress({disp: true, msg: "Classifying the Image!"});
   console.log("hi from label()");
   console.log(file);
@@ -360,17 +351,16 @@ else
 uploadData(url, file, text, predictions);
 }
 
-function uploadFile(file)
-{
+function uploadFile(file){
     setProgress({disp: true, msg: "Upload Started!"});
-    var userId=firebase.auth().currentUser.uid;
+    var userId = firebase.auth().currentUser.uid;
     var storageRef = firebase.storage().ref();
-    var ImageRef = storageRef.child(userId+'/'+file.name);
+    var ImageRef = storageRef.child(userId + '/' + file.name);
     ImageRef.put(file).then(function(snapshot) {
         console.log('Uploaded a blob or file!');
         ImageRef.getDownloadURL().then(function(url){
             console.log(url);
-            ocr(url,file);
+            label(url, file, "", true);
         })
       });
 }
