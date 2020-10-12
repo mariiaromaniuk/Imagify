@@ -7,7 +7,7 @@ import "firebase/auth";
 import "firebase/firestore";
 
 function App() {
-  //Firebase Authentication State Change Listener!
+  // Firebase Authentication State Change Listener!
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
       // User is signed in.

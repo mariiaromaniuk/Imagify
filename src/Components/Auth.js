@@ -22,12 +22,18 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-64.jpg)',
+    // backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-64.jpg)',
+    backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-67.jpg)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
     backgroundSize: 'cover',
     backgroundPosition: 'left',
+  },
+  palette: {
+    primary: {
+      main: '#fefbe3',
+    },
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -36,19 +42,20 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    margin: theme.spacing(2),
+    backgroundColor: theme.palette.error.light,
   },
   form: {
     width: '100%', 
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(2),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
+    backgroundColor: theme.palette.grey[100],
   },
 }));
 
-export default function SignInSide() {
+export default function SignInSide(){
   const classes = useStyles();
   const [mode, setMode] = useState(true);
   const [msg, setMsg] = useState({
@@ -99,7 +106,7 @@ export default function SignInSide() {
 
   // UI controller 
   function signUp(){
-    if(mode) setMode(false);
+    if (mode) setMode(false);
     else setMode(true);
   }
 
@@ -110,9 +117,8 @@ export default function SignInSide() {
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
-          
           <Typography variant="h6" gutterBottom>
-            <i>Welcome to Image Repository, your own library of images!</i>
+            {"Welcome to Image Repository, your own library of images!"}
           </Typography>
           <Avatar className={classes.avatar}>
             <Typography component="h1" variant="h5">

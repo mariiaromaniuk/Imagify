@@ -92,7 +92,7 @@ export default function ResponsiveDrawer(props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  //data is for storing details of images, categories stores the labels of left sidebar, state for right sidebar, progress -> progress bar, msg -> trigger snackbar 
+  // Data is for storing details of images, categories stores the labels of left sidebar, state for right sidebar, progress -> progress bar, msg -> trigger snackbar 
   const [data, setData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [state, setState] = useState({
