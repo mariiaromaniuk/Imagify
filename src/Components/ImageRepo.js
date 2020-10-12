@@ -1,5 +1,10 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import SnackBar from './SnackBar';
+import Card from './Card';
+import '../Image.css';
+
+// Add Material-UI components:
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import AppBar from '@material-ui/core/AppBar';
@@ -27,17 +32,19 @@ import TextField from '@material-ui/core/TextField';
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import Tooltip from '@material-ui/core/Tooltip';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import SnackBar from './SnackBar';
+
+// Add Firebase to the project:
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
-import "firebase/firestore";
+
+// Add Tensorflow to the project:
 import { createWorker } from 'tesseract.js';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import '@tensorflow/tfjs-backend-cpu';
-import '../Image.css';
-import Card from './Card';
+
+// Add utility for constructing className strings conditionally
 import clsx from 'clsx';
 
 const drawerWidth = 240;
@@ -68,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
       display: 'none',
     },
   },
-  // necessary for content to be below app bar
+  // Necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
     width: drawerWidth,

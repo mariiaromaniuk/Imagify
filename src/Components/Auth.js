@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+import SnackBar from './SnackBar';
+
+// Add Material-UI components:
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -11,18 +14,19 @@ import Grid from '@material-ui/core/Grid';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import LinearProgress from '@material-ui/core/LinearProgress';
+
+// Add Firebase to the project:
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import SnackBar from './SnackBar';
-import LinearProgress from '@material-ui/core/LinearProgress';
 
+// Styling of the components
 const useStyles = makeStyles((theme) => ({
   root: {
     height: '100vh',
   },
   image: {
-    // backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-64.jpg)',
     backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-67.jpg)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
@@ -64,12 +68,19 @@ export default function SignInSide(){
 
   // Log in an user to the app
   function signIn(){
+    // Display linear progress bar while DOM is rendering
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
-    firebase.auth().signInWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error){
-      // Handle Errors here
+    // Firebase authenticate using password-based accounts
+    firebase.auth().signInWithEmailAndPassword(
+      // retrieve email
+      document.getElementById("email").value, 
+      // retrieve password
+      document.getElementById("password").value)
+      .catch(function(error){
+      // handle errors here
       var errorCode = error.code;
       var errorMessage = error.message;
-      // Progress Bar
+      // progress bar
       setMsg({
         disp: true,
         message: errorMessage,
@@ -81,8 +92,8 @@ export default function SignInSide(){
 
   // Sign up a user for the app
   function register(){
-    // Progress Bar
-    if (document.getElementById("password").value!==document.getElementById("password1").value){
+    // Check if passwords match
+    if (document.getElementById("password").value !== document.getElementById("password1").value){
       setMsg({
         disp: true,
         severity: "error",
@@ -90,9 +101,15 @@ export default function SignInSide(){
       });
       return;
     }
+    // Display linear progress bar while DOM is rendering
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
-    firebase.auth().createUserWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value).catch(function(error){
-      // Handle Errors here
+    // Firebase authenticate using password-based accounts
+    firebase.auth().createUserWithEmailAndPassword(
+      // retrieve email
+      document.getElementById("email").value, 
+      // retrieve password
+      document.getElementById("password").value).catch(function(error){
+      // handle Errors here
       var errorCode = error.code;
       var errorMessage = error.message;
       setMsg({
@@ -106,7 +123,9 @@ export default function SignInSide(){
 
   // UI controller 
   function signUp(){
+    // mode true => sign in
     if (mode) setMode(false);
+    // mode false => sign up
     else setMode(true);
   }
 
@@ -118,7 +137,7 @@ export default function SignInSide(){
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
           <Typography variant="h6" gutterBottom>
-            {"Welcome to Image Repository, your own library of images!"}
+            {"Welcome to Image Repository, your personal image library!"}
           </Typography>
           <Avatar className={classes.avatar}>
             <Typography component="h1" variant="h5">
@@ -168,9 +187,8 @@ export default function SignInSide(){
             <Button
               fullWidth
               variant="contained"
-              color="455A64"
               className={classes.submit}
-              onClick={mode? signIn : register}
+              onClick={mode ? signIn : register}
             >
               {mode && "Sign In"}
               {!mode && "Sign Up"}
@@ -187,7 +205,9 @@ export default function SignInSide(){
       </Grid>
     </Grid>
 
-    {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={()=>{setMsg({disp: false})}} />}
+    {/* Snackbar provide brief messages about app 
+    processes at the bottom of the screen. */}
+    {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={() => {setMsg({disp: false})}} />}
     </div>
   );
 }
