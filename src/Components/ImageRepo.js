@@ -113,15 +113,13 @@ export default function ResponsiveDrawer(props) {
   const [progress, setProgress] = useState({disp: false})
   const [msg, setMsg] = useState({disp: false});
 
+  // Right side drawer with image details show/hide 
   const toggleDrawer = (anchor, open, name, url, predictions, text) => (event) => {
-    // if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-    //   return;
-    // }
     setState({right: open, name: name, url: url, predictions: predictions, text: text });
   };
   
   // Load user data after component loads
-  useEffect(() => {
+  useEffect(() => { 
     var db = firebase.firestore();
     var userId = firebase.auth().currentUser.uid;
     db.collection("images").doc(userId).get().then(function(doc) {
@@ -151,7 +149,7 @@ export default function ResponsiveDrawer(props) {
           var userId=firebase.auth().currentUser.uid;
           db.collection("images").doc(userId).set({
             img: ""
-          }).then(function() {
+          }).then(function(){
             // register onChange listener
             db.collection("images").doc(userId)
             .onSnapshot(function(doc) {
@@ -163,15 +161,15 @@ export default function ResponsiveDrawer(props) {
               setCategories(tempCategories);
               setData(doc.data().img);
             });
-        })
-        .catch(function(error) {
+          })
+          .catch(function(error) {
             console.error("Error writing document: ", error);
-        });
+          });
       }
-  }).catch(function(error) {
+    }).catch(function(error) {
       console.log("Error getting document:", error);
-  });
-},[]);
+    });
+  },[]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -209,22 +207,19 @@ export default function ResponsiveDrawer(props) {
     </div>
   );
 
+  // Right side drawer with image details
   const list = (anchor) => (
     <div className={clsx(classes.list, {
-      [classes.fullList]: anchor === 'top' || anchor === 'bottom',
-    })}>
-    <div
-      className={clsx(classes.list, {
-        [classes.fullList]: anchor === 'top' || anchor === 'bottom',
-      })}
+      [classes.fullList]: anchor === 'top' || anchor === 'bottom',})}>
+      <div className={clsx(classes.list, {
+        [classes.fullList]: anchor === 'top' || anchor === 'bottom',})}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
-    >
-      <Divider />
-      <List>
+      onKeyDown={toggleDrawer(anchor, false)}>
+        <Divider />
+        <List>
           <ListItem button>
-          <img src={state.url} width="150px" height="150px" alt={state.name} style={{marginLeft: "60px", border: "2px solid black"}} />
+            <img src={state.url} width="150px" height="150px" alt={state.name} style={{marginLeft: "60px", border: "2px solid black"}} />
           </ListItem>
           <ListItem button>
             <ListItemText primary={"Name: "+ state.name} />
@@ -235,96 +230,95 @@ export default function ResponsiveDrawer(props) {
           <ListItem button>
             <ListItemText primary={"Text: "+ state.text} />
           </ListItem>
-          
-      </List>
-    </div>
-    <Divider />
-    <ListItem button>
-    <a href={state.url} target="_blank" rel="noopener noreferrer"><ListItemText primary="View Image!" /></a>
-    </ListItem>
+        </List>
+      </div>
+      <Divider />
+      <ListItem button>
+        <a href={state.url} target="_blank" rel="noopener noreferrer">
+          <ListItemText primary="View Image" />
+        </a>
+      </ListItem>
     </div>
   );
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
-// Upload data to Firebase
-function uploadData(url, file, text, predictions){
-  console.log(url);console.log(text);console.log(predictions);
-  var str = predictions[0].className;
+  // Upload data to Firebase
+  function uploadData(url, file, text, predictions){
+    console.log(url);console.log(text);console.log(predictions);
+    var str = predictions[0].className;
 
-  for (var i = 1; i < predictions.length; i++)
-    str = str + ", " + predictions[i].className;
+    for (var i = 1; i < predictions.length; i++)
+      str = str + ", " + predictions[i].className;
 
-  var d = new Date();
-  var m = d.getMonth()+1;
-  d = d.getDate() + "-" + m + "-" + d.getFullYear();
-  const temp = {
-    url: url,
-    text: text,
-    predictions: str,
-    name: file.name,
-    date: d
-  };
-  const tempData = [...data];
+    var d = new Date();
+    var m = d.getMonth()+1;
+    d = d.getDate() + "-" + m + "-" + d.getFullYear();
+    const temp = {
+      url: url,
+      text: text,
+      predictions: str,
+      name: file.name,
+      date: d
+    };
+    const tempData = [...data];
+    tempData.push(temp);
+    setData(tempData);
 
-  tempData.push(temp);
-  setData(tempData);
+    var db = firebase.firestore();
+    var userId = firebase.auth().currentUser.uid;
+    db.collection("images").doc(userId).set({
+      img: tempData
+    }).then(function() {
+      console.log("Document successfully written!");
+      setMsg({disp: true, severity: "success", message: "Data analysed successfully!"});
+      setProgress({disp: false});
+    })
+    .catch(function(error) {
+      console.error("Error writing document: ", error);
+      setMsg({disp: true, severity: "error", message: "Error analysing Image!"});
+      setProgress({disp: false});
+    });
+  }
 
-  var db = firebase.firestore();
-  var userId = firebase.auth().currentUser.uid;
-  db.collection("images").doc(userId).set({
-    img: tempData
-  }).then(function() {
-    console.log("Document successfully written!");
-    setMsg({disp: true, severity: "success", message: "Data analysed successfully!"});
-    setProgress({disp: false});
-})
-.catch(function(error) {
-    console.error("Error writing document: ", error);
-    setMsg({disp: true, severity: "error", message: "Error analysing Image!"});
-    setProgress({disp: false});
-});
-
-}
-
-function search(text, searchType){
-  // console.log(text);
-  var docs = document.getElementsByClassName("metadatasearch");
-  var holder = document.getElementsByClassName("metadataholder");
-  // console.log(docs);
-  for (var i = 0; i < docs.length; i++){
-    var txtValue = docs[i].textContent || docs[i].innerText;
-    var textArray=text.split(', ');
-    var res = false;
-    for (var j = 0; j < textArray.length; j++)
-    if (searchType){
-      if (txtValue.toLowerCase().includes(textArray[j].toLowerCase())){
-        res = true;
+  function search(text, searchType){
+    // console.log(text);
+    var docs = document.getElementsByClassName("metadatasearch");
+    var holder = document.getElementsByClassName("metadataholder");
+    // console.log(docs);
+    for (var i = 0; i < docs.length; i++){
+      var txtValue = docs[i].textContent || docs[i].innerText;
+      var textArray=text.split(', ');
+      var res = false;
+      for (var j = 0; j < textArray.length; j++)
+      if (searchType){
+        if (txtValue.toLowerCase().includes(textArray[j].toLowerCase())){
+          res = true;
+        } else {
+          res = false;
+          break;
+        }
       } else {
-        res = false;
-        break;
+        if (txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
+          res = true;
       }
-    } else {
-      if (txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
-        res = true;
-    }
-    if (res){
-      holder[i].style.display = "";
-    } else {
-      holder[i].style.display = "none";
+      if (res){
+        holder[i].style.display = "";
+      } else {
+        holder[i].style.display = "none";
+      }
     }
   }
-}
 
-function searchImage(predictions){
-  setProgress({disp: false});
-  // console.log(predictions);
-  var searchStr = predictions[0].className;
-  for (var i = 1; i < predictions.length;i ++)
-     searchStr += ", " + predictions[i].className;
-  document.getElementById("search").value = searchStr;
-  search(searchStr, false);
-}
+  function searchImage(predictions){
+    setProgress({disp: false});
+    // console.log(predictions);
+    var searchStr = predictions[0].className;
+    for (var i = 1; i < predictions.length;i ++)
+       searchStr += ", " + predictions[i].className;
+    document.getElementById("search").value = searchStr;
+    search(searchStr, false);
+  }
 
 // Tesseract.js text recognition layer
 // function ocr(url, file){
@@ -345,106 +339,107 @@ function searchImage(predictions){
 //     })();
 // }
 
-// Label image and upload/search by its keywords
-async function label(url, file, text, searchType) {
-  setProgress({disp: true, msg: "Classifying the Image!"});
-  console.log("hi from label()");
-  console.log(file);
-  //convert a fFile() to Image() for Tensorflow.js
-  var ur = URL.createObjectURL(file),img = new Image();                         
-  img.onload = function() {                    
-      URL.revokeObjectURL(this.src);             
+  // Label image and upload/search by its keywords
+  async function label(url, file, text, searchType) {
+    setProgress({disp: true, msg: "Classifying the Image!"});
+    console.log("hi from label()");
+    console.log(file);
+    //convert a fFile() to Image() for Tensorflow.js
+    var ur = URL.createObjectURL(file),img = new Image();                         
+    img.onload = function() {                    
+        URL.revokeObjectURL(this.src);             
     };
-  img.src = ur;  
-  // Load mobilenet model
-  const model = await mobilenet.load();
-  // Classify the image
-  const predictions = await model.classify(img);
-  // console.log(predictions);
-  if (!searchType)
-    searchImage(predictions);
-  else
-    uploadData(url, file, text, predictions);
-}
+    img.src = ur;  
+    // Load mobilenet model
+    const model = await mobilenet.load();
+    // Classify the image
+    const predictions = await model.classify(img);
+    // console.log(predictions);
+    if (!searchType)
+      searchImage(predictions);
+    else
+      uploadData(url, file, text, predictions);
+  }
 
-// Upload file to the Firebase storage
-function uploadFile(file){
+  // Upload file to the Firebase storage
+  function uploadFile(file){
     setProgress({disp: true, msg: "Upload Started!"});
     var userId = firebase.auth().currentUser.uid;
     var storageRef = firebase.storage().ref();
     var ImageRef = storageRef.child(userId + '/' + file.name);
     ImageRef.put(file).then(function(snapshot) {
-        console.log('Uploaded a blob or file!');
-        ImageRef.getDownloadURL().then(function(url){
-            // console.log(url);
-            label(url, file, "", true);
-        })
+      // console.log('Uploaded a blob or file!');
+      ImageRef.getDownloadURL().then(function(url){
+        // console.log(url);
+        label(url, file, "", true);
+      })
     });
-}
+  }
 
-function selectFiles(){
+  function selectFiles(){
     var files = document.getElementById("selectFiles").files;
     for (var i = 0; i < files.length; i++){
         uploadFile(files[i]);
     }
-}
+  }
 
-function signOut(){
-  firebase.auth().signOut().then(function() {
-    // Sign-out successful
-  }).catch(function(error) {
-    // An error happened
-  });
-}
-
-function deleteItem(index){
-  // console.log("hi from delete");
-  var temp = [...data];
-  var tempData = temp[index].name;
-  temp.splice(index,1);
-  setData(temp);
-  var db = firebase.firestore();
-  var userId = firebase.auth().currentUser.uid;
-  db.collection("images").doc(userId).set({
-    img: temp
-  }).then(function() {
-    // console.log("Document successfully written!");
-    firebase.storage().ref().child(userId + "/" + tempData).delete().then(function(){
-      setMsg({disp: true, severity: "success", message: "Data deleted successfully!"});
+  function signOut(){
+    firebase.auth().signOut().then(function() {
+      // Sign-out successful
+    }).catch(function(error) {
+      // An error happened
     });
-})
-.catch(function(error) {
+  }
+
+  function deleteItem(index){
+    // console.log("hi from delete");
+    var temp = [...data];
+    var tempData = temp[index].name;
+    temp.splice(index,1);
+    setData(temp);
+    var db = firebase.firestore();
+    var userId = firebase.auth().currentUser.uid;
+    db.collection("images").doc(userId).set({
+      img: temp
+    }).then(function() {
+      // console.log("Document successfully written!");
+      firebase.storage().ref().child(userId + "/" + tempData).delete().then(function(){
+        setMsg({disp: true, severity: "success", message: "Data deleted successfully!"});
+      });
+    })
+    .catch(function(error) {
     // console.error("Error writing document: ", error);
-    setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
-});
-}
+      setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
+    });
+  }
 
   return (
     <div>
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar position="fixed" className={classes.appBar} >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            className={classes.menuButton}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h5" noWrap>
-            <i>imagify </i>
-          </Typography>
-          <div>
+      <div className={classes.root}>
+        {/* CssBaseline component kickstarts consistent baseline to build upon. */}
+        <CssBaseline />
+
+        {/* App Bar */}
+        <AppBar position="fixed" className={classes.appBar} >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              className={classes.menuButton}>
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h5" noWrap>
+              <i>imagify </i>
+            </Typography>
+            <div>
               <IconButton
                 aria-label="account of current user"
                 aria-controls="menu-appbar"
                 aria-haspopup="true"
                 onClick={handleMenu}
-                color="inherit"
-              >
+                color="inherit">
                 <AccountCircle />
               </IconButton>
               <Menu
@@ -460,109 +455,167 @@ function deleteItem(index){
                   horizontal: 'right',
                 }}
                 open={open}
-                onClose={handleClose}
-              >
-                <MenuItem onClick={handleClose}>{firebase.auth().currentUser.email}</MenuItem>
-                <MenuItem onClick={signOut} >Sign Out</MenuItem>
+                onClose={handleClose}>
+                <MenuItem onClick={handleClose}>
+                  {firebase.auth().currentUser.email}
+                </MenuItem>
+                <MenuItem onClick={signOut}>
+                  Sign Out
+                </MenuItem>
               </Menu>
             </div>
-        </Toolbar>
-      </AppBar>
+          </Toolbar>
+        </AppBar>
       
-      <nav className={classes.drawer} aria-label="mailbox folders">
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        <Hidden smUp implementation="css">
-          <Drawer
-            container={container}
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
-            }}
-          >
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden xsDown implementation="css">
-          <Drawer
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            variant="permanent"
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Hidden>
-      </nav>
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
-        <Typography paragraph>
+        {/* Side Drawer */}
+        <nav className={classes.drawer} aria-label="mailbox folders">
+          {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+          <Hidden smUp implementation="css">
+            <Drawer
+              container={container}
+              variant="temporary"
+              anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+              ModalProps={{
+                keepMounted: true, // Better open performance on mobile.
+              }}>
+              {drawer}
+            </Drawer>
+          </Hidden>
+          <Hidden xsDown implementation="css">
+            <Drawer
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+              variant="permanent"
+              open>
+              {drawer}
+            </Drawer>
+          </Hidden>
+        </nav>
 
-          <Paper>
-          <div >
-            <Grid container spacing={1} alignItems="flex-end" justify="center">
-              <Grid item>
-                <ImageSearchIcon />
-              </Grid>
-              <Grid item>
-                <TextField id="search" label="Search" placeholder="Please enter a search query" InputLabelProps={{shrink: true,}} style={{width: "500px"}} onKeyUp={event=>search(event.target.value, true)} />
-                <input accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} id="icon-button-file" type="file" onChange={event=>label("", event.target.files[0], "", false)} />
-                <label htmlFor="icon-button-file">
-                  <IconButton color="primary" aria-label="upload picture" component="span">
-                  <Tooltip title="Search similar Images"><PhotoCamera /></Tooltip>
-                  </IconButton>
-                </label>
-              </Grid>
-                <Paper>
-                  {"Please enter a search query in the search field (multiple queries should be comma-separated, eg: `cat, grass` with no trailing commas)"}
-                </Paper>
-            </Grid>
-          </div>
-          </Paper>  
-          <br/><br/>    
-          <Paper>
-            {progress.disp && <div>
-                  <LinearProgress color="secondary" />
+        {/* Main Field */}
+        <main className={classes.content}>
+          <div className={classes.toolbar}/>
+          <Typography paragraph>
+            {/* Search menu bar item (elevated box) */}
+            <Paper>
+              <div >
+                <Grid container spacing={1} alignItems="flex-end" justify="center">
+
+                  {/* 'Search by image' icon grid item */}
+                  <Grid item>
+                    <ImageSearchIcon />
+                  </Grid>
+
+                  {/* 'Search by image' text field grid item */}
+                  <Grid item>
+                    <TextField 
+                    id="search" 
+                    label="Search" 
+                    placeholder="Please enter a search query" 
+                    InputLabelProps={{shrink: true,}} 
+                    style={{width: "500px"}} 
+                    onKeyUp={event=>search(event.target.value, true)}/>
+                    
+                    {/* 'Search by image' input */}
+                    <input 
+                    accept="image/jpg, image/svg, image/jpeg, image/png" 
+                    style={{display: "none"}} 
+                    id="icon-button-file" 
+                    type="file" 
+                    onChange={event=>label("", event.target.files[0], "", false)} />
+
+                    {/* 'Search by image' button label */}
+                    <label htmlFor="icon-button-file">
+                      <IconButton color="primary" aria-label="upload picture" component="span">
+                        <Tooltip title="Search similar images">
+                          <PhotoCamera />
+                        </Tooltip>
+                      </IconButton>
+                    </label>
+                  </Grid>
+                    
+                  {/* Info bar item */}
+                  <Typography variant="h7" noWrap>
+                    {"Please enter a search query in the search field (multiple queries should be comma-separated, eg: `cat, grass` with no trailing commas)"}
+                  </Typography>
+                </Grid>
+              </div>
+            </Paper>  
+            <br/><br/>   
+
+            {/* Progress bar item */}
+            <Paper>
+              {progress.disp && 
+              <div>
+                <LinearProgress color="secondary" />
                   <i>{progress.msg}</i>
               </div>
-            }
-          </Paper>      
-          <br />
-              <Grid item xs={12}>
-                <Grid container spacing={4}>
-                  {
-                  data.length?
-                  data.map((inputfield, index) => (
-                    <Grid key={index} item className="metadataholder">
-                      <Paper className={classes.paper} >
-                        <Card name={inputfield.name} url={inputfield.url} date={inputfield.date} predictions={inputfield.predictions} text={inputfield.text} onHome={()=>deleteItem(index)} onDetails={toggleDrawer("right", true, inputfield.name, inputfield.url, inputfield.predictions, inputfield.text)} />
-                      </Paper >
-                    </Grid>
-                  ))
-                  : <p>No Images found</p>
+              }
+            </Paper>      
+            <br/>
+
+            {/* Image card items list */}
+            <Grid item xs={12}>
+              <Grid container spacing={4}>
+                {data.length ? data.map((inputfield, index) => (
+                  <Grid key={index} item className="metadataholder">
+                    <Paper className={classes.paper} >
+                      <Card 
+                        name={inputfield.name} 
+                        url={inputfield.url} 
+                        date={inputfield.date} 
+                        predictions={inputfield.predictions} 
+                        text={inputfield.text} 
+                        onHome={()=>deleteItem(index)} 
+                        onDetails={toggleDrawer("right", true, inputfield.name, inputfield.url, inputfield.predictions, inputfield.text)} />
+                    </Paper>
+                  </Grid>
+                  )) : <p>No Images found</p>
                 }
-                </Grid>
               </Grid>
+            </Grid>
             
-              {/* Select file to upload */}
-              <input type="file" id="selectFiles" accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} onChange={()=>selectFiles(this)} />
-            
-              <Fab color="primary" aria-label="add" id="upload" onClick={()=>{document.getElementById("selectFiles").click()}}>
-            <CloudUploadIcon /> 
-        </Fab>        
-      </Typography>
-      </main>
-      <Drawer anchor={"right"} open={state["right"]} onClose={toggleDrawer("right", false)}>
-            {list("right")}
-      </Drawer>
-    </div>
-    {msg.disp && <SnackBar message={msg.message} severity={msg.severity} onHome={()=>{setMsg({disp: false})}} />}
+            {/* Select file to upload */}
+            <input 
+            type="file" 
+            id="selectFiles" 
+            accept="image/jpg, image/svg, image/jpeg, image/png" 
+            style={{display: "none"}} 
+            onChange={() => selectFiles(this)} />
+
+            {/* Cloud icon for upload */}
+            <Fab 
+            color="primary" 
+            aria-label="add" 
+            id="upload" 
+            onClick={() => {document.getElementById("selectFiles").click()}}>
+              <CloudUploadIcon /> 
+            </Fab>        
+          </Typography>
+        </main>
+
+        {/* Right side drawer */}
+        <Drawer 
+        anchor={"right"} 
+        open={state["right"]} 
+        onClose={toggleDrawer("right", false)}>
+          {list("right")}
+        </Drawer>
+      </div>
+
+      {/* Snackbar provide brief messages about app 
+      processes at the bottom of the screen. */}
+      {msg.disp && 
+      <SnackBar 
+      message={msg.message} 
+      severity={msg.severity} o
+      nHome={() => {setMsg({disp: false})}} />}
     </div>
   );
 };
