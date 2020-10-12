@@ -108,6 +108,7 @@ export default function ResponsiveDrawer(props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   
   // Declare new state variable mobileOpen and set it to null
+  // Used for drop menu for user to sign out, closed by default
   // Use setAnchorEl to mutate the anchorEl state
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -208,6 +209,7 @@ export default function ResponsiveDrawer(props) {
   };
 
 
+  // List Image Categories
   const drawer = (
     <div>
       <div className={classes.toolbar} />
@@ -222,7 +224,14 @@ export default function ResponsiveDrawer(props) {
       <Divider />
       <List>
         {categories.map((text, index) => (
-          <ListItem button key={text} onClick={() => {document.getElementById("search").value=text;document.getElementById("search").focus();search(text, true)}}>
+          <ListItem 
+            button key={text} 
+            // List only the categories from search input
+            onClick={() => {
+              document.getElementById("search").value=text;
+              document.getElementById("search").focus();
+              search(text, true)
+            }}>
             <ListItemText primary={text} />
           </ListItem>
         ))}
@@ -230,6 +239,7 @@ export default function ResponsiveDrawer(props) {
       <Divider />
     </div>
   );
+
 
   // Right side drawer with image details
   const list = (anchor) => (
@@ -267,17 +277,23 @@ export default function ResponsiveDrawer(props) {
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
+
   // Upload data to Firebase
   function uploadData(url, file, text, predictions){
-    console.log(url);console.log(text);console.log(predictions);
-    var str = predictions[0].className;
+    // console.log(url);console.log(text);console.log(predictions);
 
+    // str is a string variable representing the class or 
+    // space-separated classes of the predictions element.
+    var str = predictions[0].className;
     for (var i = 1; i < predictions.length; i++)
       str = str + ", " + predictions[i].className;
 
+    // Set up the date
     var d = new Date();
-    var m = d.getMonth()+1;
+    var m = d.getMonth() + 1;
     d = d.getDate() + "-" + m + "-" + d.getFullYear();
+
+    // Retrieve the image data
     const temp = {
       url: url,
       text: text,
@@ -285,47 +301,56 @@ export default function ResponsiveDrawer(props) {
       name: file.name,
       date: d
     };
+    // Add new data to user data
     const tempData = [...data];
     tempData.push(temp);
     setData(tempData);
 
+    // Add data to the Firebase
     var db = firebase.firestore();
     var userId = firebase.auth().currentUser.uid;
     db.collection("images").doc(userId).set({
       img: tempData
     }).then(function() {
-      console.log("Document successfully written!");
+      // console.log("Document successfully written!");
       setMsg({disp: true, severity: "success", message: "Data analysed successfully!"});
       setProgress({disp: false});
     })
     .catch(function(error) {
-      console.error("Error writing document: ", error);
+      // console.error("Error writing document: ", error);
       setMsg({disp: true, severity: "error", message: "Error analysing Image!"});
       setProgress({disp: false});
     });
   }
 
+
+  // Returns all the items or only searched items
   function search(text, searchType){
     // console.log(text);
+    // returns an array-like object of all child elements of the given class
     var docs = document.getElementsByClassName("metadatasearch");
     var holder = document.getElementsByClassName("metadataholder");
     // console.log(docs);
     for (var i = 0; i < docs.length; i++){
+      // textContent gets the content of all elements
+      // innerText only shows “human-readable” elements
       var txtValue = docs[i].textContent || docs[i].innerText;
-      var textArray=text.split(', ');
+      var textArray = text.split(', ');
       var res = false;
       for (var j = 0; j < textArray.length; j++)
-      if (searchType){
-        if (txtValue.toLowerCase().includes(textArray[j].toLowerCase())){
-          res = true;
+        // If searchType is true - check existing bata for each serch query
+        if (searchType){
+          if (txtValue.toLowerCase().includes(textArray[j].toLowerCase())){
+            res = true;
+          } else {
+            res = false;
+            break;
+          }
+        // If searchType is false - return all the data
         } else {
-          res = false;
-          break;
+          if (txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
+            res = true;
         }
-      } else {
-        if (txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
-          res = true;
-      }
       if (res){
         holder[i].style.display = "";
       } else {
