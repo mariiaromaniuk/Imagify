@@ -39,8 +39,10 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 
-// Add Tensorflow to the project:
+// Add Tensorflow and Tesseract to the project:
+// Tesseract.js - text recognition library
 import { createWorker } from 'tesseract.js';
+// TensorFlow.js - object ricognition library
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import '@tensorflow/tfjs-backend-cpu';
 
@@ -99,7 +101,10 @@ export default function ResponsiveDrawer(props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  // Data is for storing details of images, categories stores the labels of left sidebar, state for right sidebar, progress -> progress bar, msg -> trigger snackbar 
+  // Data is for storing details of images:
+  // categories stores the labels of left sidebar, 
+  // state for right sidebar, 
+  // progress -> progress bar, msg -> trigger snackbar 
   const [data, setData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [state, setState] = useState({
@@ -115,7 +120,7 @@ export default function ResponsiveDrawer(props) {
     setState({right: open, name: name, url: url, predictions: predictions, text: text });
   };
   
-  //load user data after component loads
+  // Load user data after component loads
   useEffect(()=>{
     var db = firebase.firestore();
     var userId = firebase.auth().currentUser.uid;
@@ -196,13 +201,12 @@ export default function ResponsiveDrawer(props) {
       <Divider />
       <List>
         {categories.map((text, index) => (
-          <ListItem button key={text} onClick={()=>{document.getElementById("search").value=text;document.getElementById("search").focus();search(text, true)}}>
+          <ListItem button key={text} onClick={() => {document.getElementById("search").value=text;document.getElementById("search").focus();search(text, true)}}>
             <ListItemText primary={text} />
           </ListItem>
         ))}
       </List>
       <Divider />
-      
     </div>
   );
 
@@ -244,7 +248,7 @@ export default function ResponsiveDrawer(props) {
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
-  // upload data to firebase
+// Upload data to Firebase
 function uploadData(url, file, text, predictions){
   console.log(url);console.log(text);console.log(predictions);
   var str=predictions[0].className;
@@ -291,17 +295,17 @@ function search(text, searchType){
     var res = false;
     for (var j = 0; j < textArray.length; j++)
     if (searchType){
-      if(txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
-      res=true;
-      else 
-      {res=false;break;}
+      if (txtValue.toLowerCase().includes(textArray[j].toLowerCase())){
+        res = true;
+      } else {
+        res = false;
+        break;
+      }
+    } else {
+      if (txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
+        res = true;
     }
-    else
-    {
-      if(txtValue.toLowerCase().includes(textArray[j].toLowerCase()))
-      res=true;
-    }
-    if (res) {
+    if (res){
       holder[i].style.display = "";
     } else {
       holder[i].style.display = "none";
@@ -311,14 +315,15 @@ function search(text, searchType){
 
 function searchImage(predictions){
   setProgress({disp: false});
-  console.log(predictions);
-  var searchStr=predictions[0].className;
-  for(var i=1;i<predictions.length;i++)
-  searchStr+=", "+predictions[i].className;
-  document.getElementById("search").value=searchStr;
+  // console.log(predictions);
+  var searchStr = predictions[0].className;
+  for (var i = 1; i < predictions.length;i ++)
+     searchStr += ", " + predictions[i].className;
+  document.getElementById("search").value = searchStr;
   search(searchStr, false);
 }
 
+// Tesseract.js text recognition layer
 // function ocr(url, file){
 //     setProgress({disp: true, msg: "Performing OCR on the image!"});
 //     console.log("hi from ocr()");
@@ -341,7 +346,7 @@ async function label(url, file, text, searchType) {
   setProgress({disp: true, msg: "Classifying the Image!"});
   console.log("hi from label()");
   console.log(file);
-  //convert a fFile() to Image() for Tensorflow JS
+  //convert a fFile() to Image() for Tensorflow.js
   var ur = URL.createObjectURL(file),img = new Image();                         
   img.onload = function() {                    
       URL.revokeObjectURL(this.src);             
@@ -352,10 +357,10 @@ async function label(url, file, text, searchType) {
 // Classify the image.
 const predictions = await model.classify(img);
 // console.log(predictions);
-if(!searchType)
-searchImage(predictions);
+if (!searchType)
+  searchImage(predictions);
 else
-uploadData(url, file, text, predictions);
+  uploadData(url, file, text, predictions);
 }
 
 function uploadFile(file){
@@ -372,29 +377,25 @@ function uploadFile(file){
       });
 }
 
-function selectFiles()
-{
+function selectFiles(){
     var files = document.getElementById("selectFiles").files;
-    for(var i=0;i<files.length;i++)
-    {
+    for (var i = 0; i < files.length; i++){
         uploadFile(files[i]);
     }
 }
 
-function signOut()
-{
+function signOut(){
   firebase.auth().signOut().then(function() {
-    // Sign-out successful.
+    // Sign-out successful
   }).catch(function(error) {
-    // An error happened.
+    // An error happened
   });
 }
 
-function deleteItem(index)
-{
-  console.log("hi from delete");
-  var temp=[...data];
-  var tempData=temp[index].name;
+function deleteItem(index){
+  // console.log("hi from delete");
+  var temp = [...data];
+  var tempData = temp[index].name;
   temp.splice(index,1);
   setData(temp);
   var db = firebase.firestore();
@@ -417,7 +418,7 @@ function deleteItem(index)
     <div>
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar position="fixed" className={classes.appBar}>
+      <AppBar position="fixed" className={classes.appBar} >
         <Toolbar>
           <IconButton
             color="inherit"
@@ -428,8 +429,8 @@ function deleteItem(index)
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            Image Repository
+          <Typography variant="h5" noWrap>
+            <i>imagify </i>
           </Typography>
           <div>
               <IconButton
@@ -514,7 +515,7 @@ function deleteItem(index)
                 </label>
               </Grid>
                 <Paper>
-                  <i>Please enter a search query in the search field(multiple query should be comma separated, eg: `cat, grass` with no trailing commas)</i>
+                  {"Please enter a search query in the search field (multiple queries should be comma-separated, eg: `cat, grass` with no trailing commas)"}
                 </Paper>
             </Grid>
           </div>
