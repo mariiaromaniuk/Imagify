@@ -1,5 +1,5 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+// Add hooks to handle the state and side effects in react functional component
+import React, { useState, useEffect } from 'react';
 import SnackBar from './SnackBar';
 import Card from './Card';
 import '../Image.css';
@@ -51,6 +51,7 @@ import clsx from 'clsx';
 
 const drawerWidth = 240;
 
+// Styling of the components
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -94,13 +95,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
 export default function ResponsiveDrawer(props) {
+  // Hooks let you use state and other React features without writing a class:
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
+
+  // Declare new state variable mobileOpen and set it to false
+  // 'True' indicates that app is opened on mobile device and will ajust the drawer
+  // Use setMobileOpen to mutate the mobileOpen state
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  
+  // Declare new state variable mobileOpen and set it to null
+  // Use setAnchorEl to mutate the anchorEl state
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
   // Data is for storing details of images:
   // categories stores the labels of left sidebar, 
   // state for right sidebar, 
@@ -110,12 +121,22 @@ export default function ResponsiveDrawer(props) {
   const [state, setState] = useState({
     right: false,
   });
-  const [progress, setProgress] = useState({disp: false})
-  const [msg, setMsg] = useState({disp: false});
+  const [progress, setProgress] = useState({
+    disp: false
+  })
+  const [msg, setMsg] = useState({
+    disp: false
+  });
 
   // Right side drawer with image details show/hide 
   const toggleDrawer = (anchor, open, name, url, predictions, text) => (event) => {
-    setState({right: open, name: name, url: url, predictions: predictions, text: text });
+    setState({
+      right: open, 
+      name: name, 
+      url: url, 
+      predictions: predictions, 
+      text: text 
+    });
   };
   
   // Load user data after component loads
@@ -129,7 +150,7 @@ export default function ResponsiveDrawer(props) {
           for (var i = 0; i < doc.data().img.length; i++){
             tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
           }
-          tempCategories=Array.from(new Set(tempCategories));
+          tempCategories = Array.from(new Set(tempCategories));
           setCategories(tempCategories);
           setData(doc.data().img);
           var userId=firebase.auth().currentUser.uid;
@@ -140,13 +161,13 @@ export default function ResponsiveDrawer(props) {
               for (var i = 0; i < doc.data().img.length; i++){
                 tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
               }
-              tempCategories=Array.from(new Set(tempCategories));
+              tempCategories = Array.from(new Set(tempCategories));
               setCategories(tempCategories);
               setData(doc.data().img);
             });
       } else {
           console.log("No such document!");
-          var userId=firebase.auth().currentUser.uid;
+          var userId = firebase.auth().currentUser.uid;
           db.collection("images").doc(userId).set({
             img: ""
           }).then(function(){
@@ -171,14 +192,17 @@ export default function ResponsiveDrawer(props) {
     });
   },[]);
 
+  // Use setMobileOpen to mutate the mobileOpen state
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  // Use setAnchorEl to mutate the anchorEl state
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
+  // Use setAnchorEl to mutate the anchorEl state
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -422,6 +446,7 @@ export default function ResponsiveDrawer(props) {
         {/* App Bar */}
         <AppBar position="fixed" className={classes.appBar} >
           <Toolbar>
+            {/* Menu button in the mobile view mode */}
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -430,9 +455,13 @@ export default function ResponsiveDrawer(props) {
               className={classes.menuButton}>
               <MenuIcon />
             </IconButton>
+
+            {/* Logo */}
             <Typography variant="h5" noWrap>
               <i>imagify </i>
             </Typography>
+
+            {/* User icon button for drop menu to sign out */}
             <div>
               <IconButton
                 aria-label="account of current user"
@@ -467,9 +496,10 @@ export default function ResponsiveDrawer(props) {
           </Toolbar>
         </AppBar>
       
-        {/* Side Drawer */}
+        {/* Left Side Drawer - Image Categories */}
         <nav className={classes.drawer} aria-label="mailbox folders">
           {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+          {/* In the mobile view -> onClose */}
           <Hidden smUp implementation="css">
             <Drawer
               container={container}
@@ -486,6 +516,7 @@ export default function ResponsiveDrawer(props) {
               {drawer}
             </Drawer>
           </Hidden>
+          {/* In the web view -> permanent */}
           <Hidden xsDown implementation="css">
             <Drawer
               classes={{
