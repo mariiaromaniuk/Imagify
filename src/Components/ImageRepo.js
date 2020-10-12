@@ -39,11 +39,11 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 
-// Add Tensorflow and Tesseract to the project:
 // Tesseract.js - text recognition library
 import { createWorker } from 'tesseract.js';
 // TensorFlow.js - object ricognition library
 import * as mobilenet from '@tensorflow-models/mobilenet';
+// Adds the CPU backend to the global backend registry
 import '@tensorflow/tfjs-backend-cpu';
 
 // Add utility for constructing className strings conditionally
@@ -121,7 +121,7 @@ export default function ResponsiveDrawer(props) {
   };
   
   // Load user data after component loads
-  useEffect(()=>{
+  useEffect(() => {
     var db = firebase.firestore();
     var userId = firebase.auth().currentUser.uid;
     db.collection("images").doc(userId).get().then(function(doc) {
@@ -135,12 +135,11 @@ export default function ResponsiveDrawer(props) {
           setCategories(tempCategories);
           setData(doc.data().img);
           var userId=firebase.auth().currentUser.uid;
-          //register onChange listener
+          // register onChange listener
           db.collection("images").doc(userId)
             .onSnapshot(function(doc) {
               var tempCategories = [];
-              for(var i=0;i<doc.data().img.length;i++)
-              {
+              for (var i = 0; i < doc.data().img.length; i++){
                 tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
               }
               tempCategories=Array.from(new Set(tempCategories));
@@ -153,15 +152,14 @@ export default function ResponsiveDrawer(props) {
           db.collection("images").doc(userId).set({
             img: ""
           }).then(function() {
-            //register onChange listener
+            // register onChange listener
             db.collection("images").doc(userId)
             .onSnapshot(function(doc) {
               var tempCategories = [];
-              for(var i=0;i<doc.data().img.length;i++)
-              {
-                tempCategories=tempCategories.concat(doc.data().img[i].predictions.split(', '));
+              for (var i = 0; i < doc.data().img.length; i++){
+                tempCategories = tempCategories.concat(doc.data().img[i].predictions.split(', '));
               }
-              tempCategories=Array.from(new Set(tempCategories));
+              tempCategories = Array.from(new Set(tempCategories));
               setCategories(tempCategories);
               setData(doc.data().img);
             });
@@ -178,6 +176,7 @@ export default function ResponsiveDrawer(props) {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -251,24 +250,28 @@ export default function ResponsiveDrawer(props) {
 // Upload data to Firebase
 function uploadData(url, file, text, predictions){
   console.log(url);console.log(text);console.log(predictions);
-  var str=predictions[0].className;
-  for(var i=1;i<predictions.length;i++)
-  str=str+", "+ predictions[i].className;
+  var str = predictions[0].className;
+
+  for (var i = 1; i < predictions.length; i++)
+    str = str + ", " + predictions[i].className;
+
   var d = new Date();
-  var m=d.getMonth()+1;
-  d = d.getDate()+"-"+m+"-"+d.getFullYear();
-  const temp={
+  var m = d.getMonth()+1;
+  d = d.getDate() + "-" + m + "-" + d.getFullYear();
+  const temp = {
     url: url,
     text: text,
     predictions: str,
     name: file.name,
     date: d
   };
-  const tempData=[...data];
+  const tempData = [...data];
+
   tempData.push(temp);
   setData(tempData);
+
   var db = firebase.firestore();
-  var userId=firebase.auth().currentUser.uid;
+  var userId = firebase.auth().currentUser.uid;
   db.collection("images").doc(userId).set({
     img: tempData
   }).then(function() {
@@ -342,6 +345,7 @@ function searchImage(predictions){
 //     })();
 // }
 
+// Label image and upload/search by its keywords
 async function label(url, file, text, searchType) {
   setProgress({disp: true, msg: "Classifying the Image!"});
   console.log("hi from label()");
@@ -352,17 +356,18 @@ async function label(url, file, text, searchType) {
       URL.revokeObjectURL(this.src);             
     };
   img.src = ur;  
+  // Load mobilenet model
   const model = await mobilenet.load();
-
-// Classify the image.
-const predictions = await model.classify(img);
-// console.log(predictions);
-if (!searchType)
-  searchImage(predictions);
-else
-  uploadData(url, file, text, predictions);
+  // Classify the image
+  const predictions = await model.classify(img);
+  // console.log(predictions);
+  if (!searchType)
+    searchImage(predictions);
+  else
+    uploadData(url, file, text, predictions);
 }
 
+// Upload file to the Firebase storage
 function uploadFile(file){
     setProgress({disp: true, msg: "Upload Started!"});
     var userId = firebase.auth().currentUser.uid;
@@ -371,10 +376,10 @@ function uploadFile(file){
     ImageRef.put(file).then(function(snapshot) {
         console.log('Uploaded a blob or file!');
         ImageRef.getDownloadURL().then(function(url){
-            console.log(url);
+            // console.log(url);
             label(url, file, "", true);
         })
-      });
+    });
 }
 
 function selectFiles(){
@@ -399,17 +404,17 @@ function deleteItem(index){
   temp.splice(index,1);
   setData(temp);
   var db = firebase.firestore();
-  var userId=firebase.auth().currentUser.uid;
+  var userId = firebase.auth().currentUser.uid;
   db.collection("images").doc(userId).set({
     img: temp
   }).then(function() {
-    console.log("Document successfully written!");
-    firebase.storage().ref().child(userId+"/"+tempData).delete().then(function(){
+    // console.log("Document successfully written!");
+    firebase.storage().ref().child(userId + "/" + tempData).delete().then(function(){
       setMsg({disp: true, severity: "success", message: "Data deleted successfully!"});
     });
 })
 .catch(function(error) {
-    console.error("Error writing document: ", error);
+    // console.error("Error writing document: ", error);
     setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
 });
 }
@@ -545,10 +550,10 @@ function deleteItem(index){
                 </Grid>
               </Grid>
             
-
-        <input type="file" id="selectFiles" accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} onChange={()=>selectFiles(this)} />
+              {/* Select file to upload */}
+              <input type="file" id="selectFiles" accept="image/jpg, image/svg, image/jpeg, image/png" style={{display: "none"}} onChange={()=>selectFiles(this)} />
             
-        <Fab color="primary" aria-label="add" id="upload" onClick={()=>{document.getElementById("selectFiles").click()}}>
+              <Fab color="primary" aria-label="add" id="upload" onClick={()=>{document.getElementById("selectFiles").click()}}>
             <CloudUploadIcon /> 
         </Fab>        
       </Typography>

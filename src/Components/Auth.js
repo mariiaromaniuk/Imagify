@@ -151,7 +151,7 @@ export default function SignInSide(){
             {mode && "Sign In"}
             {!mode && "Sign Up"}
           </Typography>
-
+          
           <form className={classes.form}>
             <TextField
               variant="outlined"
