@@ -6,7 +6,7 @@ import "firebase/auth";
 import "firebase/firestore";
 import firebaseConfig from './FirebaseConfig.js';
 
-//Initializing firebaseConfig from external file containing credentials
+// Initializing firebaseConfig from external file containing credentials
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
