@@ -97,17 +97,22 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function ResponsiveDrawer(props) {
-  // Hooks let you use state and other React features without writing a class:
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
+  // Check to see if the script is being run in a web-page inside a web-browser
+  // if not - hide Image Categories panel
+  const container = window !== undefined ? () => window().document.body : undefined;
+
+  // REACT STATE HOOKS
+  // Let you use state and other React features without writing a class:
 
   // Declare new state variable mobileOpen and set it to false
   // 'True' indicates that app is opened on mobile device and will ajust the drawer
   // Use setMobileOpen to mutate the mobileOpen state
   const [mobileOpen, setMobileOpen] = React.useState(false);
   
-  // Declare new state variable mobileOpen and set it to null
+  // Declare new state variable anchorEl and set it to null
   // Used for drop menu for user to sign out, closed by default
   // Use setAnchorEl to mutate the anchorEl state
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -129,7 +134,7 @@ export default function ResponsiveDrawer(props) {
     disp: false
   });
 
-  // Right side drawer with image details show/hide 
+  // Right side slide drawer with image details show/hide 
   const toggleDrawer = (anchor, open, name, url, predictions, text) => (event) => {
     setState({
       right: open, 
@@ -140,6 +145,8 @@ export default function ResponsiveDrawer(props) {
     });
   };
   
+
+  // REACT EFFECT HOOK - similar to componentDidMount and componentDidUpdate:
   // Load user data after component loads
   useEffect(() => { 
     var db = firebase.firestore();
@@ -198,12 +205,12 @@ export default function ResponsiveDrawer(props) {
     setMobileOpen(!mobileOpen);
   };
 
-  // Use setAnchorEl to mutate the anchorEl state
+  // Use setAnchorEl to mutate sign out drop menu state
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Use setAnchorEl to mutate the anchorEl state
+  // Use setAnchorEl to mutate sign out drop menu state
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -228,7 +235,7 @@ export default function ResponsiveDrawer(props) {
             button key={text} 
             // List only the categories from search input
             onClick={() => {
-              document.getElementById("search").value=text;
+              document.getElementById("search").value = text;
               document.getElementById("search").focus();
               search(text, true)
             }}>
@@ -241,7 +248,7 @@ export default function ResponsiveDrawer(props) {
   );
 
 
-  // Right side drawer with image details
+  // Right side slide drawer with image details
   const list = (anchor) => (
     <div className={clsx(classes.list, {
       [classes.fullList]: anchor === 'top' || anchor === 'bottom',})}>
@@ -256,13 +263,13 @@ export default function ResponsiveDrawer(props) {
             <img src={state.url} width="150px" height="150px" alt={state.name} style={{marginLeft: "60px", border: "2px solid black"}} />
           </ListItem>
           <ListItem button>
-            <ListItemText primary={"Name: "+ state.name} />
+            <ListItemText primary={"Name: " + state.name} />
           </ListItem>
           <ListItem button>
-            <ListItemText primary={"Predictions: "+ state.predictions} />
+            <ListItemText primary={"Predictions: " + state.predictions} />
           </ListItem>
           <ListItem button>
-            <ListItemText primary={"Text: "+ state.text} />
+            <ListItemText primary={"Text: " + state.text} />
           </ListItem>
         </List>
       </div>
@@ -275,9 +282,79 @@ export default function ResponsiveDrawer(props) {
     </div>
   );
 
-  const container = window !== undefined ? () => window().document.body : undefined;
+
+  // Select file to upload
+  function selectFiles(){
+    var files = document.getElementById("selectFiles").files;
+    for (var i = 0; i < files.length; i++){
+        uploadFile(files[i]);
+    }
+  }
 
 
+  // Tesseract.js text recognition layer
+  // function ocr(url, file){
+  //   setProgress({disp: true, msg: "Performing OCR on the image!"});
+  //   console.log("hi from ocr()");
+  //   const worker = createWorker({
+  //     logger: m => console.log(m)
+  //   });
+
+  //   (async () => {
+  //   await worker.load();
+  //   await worker.loadLanguage('eng');
+  //   await worker.initialize('eng');
+  //   const { data: { text } } = await worker.recognize(url);
+  //   console.log(text);
+  //   await worker.terminate();
+  //   label(url, file, text, true);
+  //   })();
+  // }
+
+
+  // Upload file to the Firebase storage and call label() on it
+  // label() will classify image and upload image data to db
+  function uploadFile(file){
+    setProgress({disp: true, msg: "Upload started..."});
+    var userId = firebase.auth().currentUser.uid;
+    var storageRef = firebase.storage().ref();
+    var ImageRef = storageRef.child(userId + '/' + file.name);
+    ImageRef.put(file).then(function(snapshot) {
+      // console.log('Uploaded a blob or file!');
+      ImageRef.getDownloadURL().then(function(url){
+        // console.log(url);
+        label(url, file, "", true);
+      })
+    });
+  }
+
+  
+  // Label an image using Tensorflow mobilenet model and upload/search by its keywords
+  async function label(url, file, text, searchType) {
+    setProgress({disp: true, msg: "Classifying the image..."});
+    // console.log("hi from label()"); console.log(file);
+
+    // Convert a File() to Image() for Tensorflow.js
+    var ur = URL.createObjectURL(file),img = new Image();                         
+    img.onload = function() {                    
+        URL.revokeObjectURL(this.src);             
+    };
+    img.src = ur;  
+    // Load mobilenet model
+    const model = await mobilenet.load();
+    // Classify the image
+    const predictions = await model.classify(img);
+    // console.log(predictions);
+
+    if (!searchType)
+      // If this is a search by image
+      searchImage(predictions);
+    else
+      // if this is upload image - write data to Firebase db
+      uploadData(url, file, text, predictions);
+  }
+
+  
   // Upload data to Firebase
   function uploadData(url, file, text, predictions){
     // console.log(url);console.log(text);console.log(predictions);
@@ -318,9 +395,21 @@ export default function ResponsiveDrawer(props) {
     })
     .catch(function(error) {
       // console.error("Error writing document: ", error);
-      setMsg({disp: true, severity: "error", message: "Error analysing Image!"});
+      setMsg({disp: true, severity: "error", message: "Error analysing image!"});
       setProgress({disp: false});
     });
+  }
+  
+
+  // Search image by predictions
+  function searchImage(predictions){
+    setProgress({disp: false});
+    // console.log(predictions);
+    var searchStr = predictions[0].className;
+    for (var i = 1; i < predictions.length;i ++)
+       searchStr += ", " + predictions[i].className;
+    document.getElementById("search").value = searchStr;
+    search(searchStr, false);
   }
 
 
@@ -359,87 +448,8 @@ export default function ResponsiveDrawer(props) {
     }
   }
 
-  function searchImage(predictions){
-    setProgress({disp: false});
-    // console.log(predictions);
-    var searchStr = predictions[0].className;
-    for (var i = 1; i < predictions.length;i ++)
-       searchStr += ", " + predictions[i].className;
-    document.getElementById("search").value = searchStr;
-    search(searchStr, false);
-  }
 
-// Tesseract.js text recognition layer
-// function ocr(url, file){
-//     setProgress({disp: true, msg: "Performing OCR on the image!"});
-//     console.log("hi from ocr()");
-//     const worker = createWorker({
-//       logger: m => console.log(m)
-//     });
-
-//     (async () => {
-//     await worker.load();
-//     await worker.loadLanguage('eng');
-//     await worker.initialize('eng');
-//     const { data: { text } } = await worker.recognize(url);
-//     console.log(text);
-//     await worker.terminate();
-//     label(url, file, text, true);
-//     })();
-// }
-
-  // Label image and upload/search by its keywords
-  async function label(url, file, text, searchType) {
-    setProgress({disp: true, msg: "Classifying the Image!"});
-    console.log("hi from label()");
-    console.log(file);
-    //convert a fFile() to Image() for Tensorflow.js
-    var ur = URL.createObjectURL(file),img = new Image();                         
-    img.onload = function() {                    
-        URL.revokeObjectURL(this.src);             
-    };
-    img.src = ur;  
-    // Load mobilenet model
-    const model = await mobilenet.load();
-    // Classify the image
-    const predictions = await model.classify(img);
-    // console.log(predictions);
-    if (!searchType)
-      searchImage(predictions);
-    else
-      uploadData(url, file, text, predictions);
-  }
-
-  // Upload file to the Firebase storage
-  function uploadFile(file){
-    setProgress({disp: true, msg: "Upload Started!"});
-    var userId = firebase.auth().currentUser.uid;
-    var storageRef = firebase.storage().ref();
-    var ImageRef = storageRef.child(userId + '/' + file.name);
-    ImageRef.put(file).then(function(snapshot) {
-      // console.log('Uploaded a blob or file!');
-      ImageRef.getDownloadURL().then(function(url){
-        // console.log(url);
-        label(url, file, "", true);
-      })
-    });
-  }
-
-  function selectFiles(){
-    var files = document.getElementById("selectFiles").files;
-    for (var i = 0; i < files.length; i++){
-        uploadFile(files[i]);
-    }
-  }
-
-  function signOut(){
-    firebase.auth().signOut().then(function() {
-      // Sign-out successful
-    }).catch(function(error) {
-      // An error happened
-    });
-  }
-
+  // Delete image from Firebase storage
   function deleteItem(index){
     // console.log("hi from delete");
     var temp = [...data];
@@ -461,6 +471,17 @@ export default function ResponsiveDrawer(props) {
       setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
     });
   }
+
+
+  // Sign out
+  function signOut(){
+    firebase.auth().signOut().then(function() {
+      // Sign-out successful
+    }).catch(function(error) {
+      // An error happened
+    });
+  }
+
 
   return (
     <div>
@@ -521,7 +542,7 @@ export default function ResponsiveDrawer(props) {
           </Toolbar>
         </AppBar>
       
-        {/* Left Side Drawer - Image Categories */}
+        {/* Image Categories Panel */}
         <nav className={classes.drawer} aria-label="mailbox folders">
           {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
           {/* In the mobile view -> onClose */}
@@ -544,11 +565,9 @@ export default function ResponsiveDrawer(props) {
           {/* In the web view -> permanent */}
           <Hidden xsDown implementation="css">
             <Drawer
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              variant="permanent"
-              open>
+             classes={{paper: classes.drawerPaper,}}
+             variant="permanent"
+             open>
               {drawer}
             </Drawer>
           </Hidden>
@@ -563,28 +582,28 @@ export default function ResponsiveDrawer(props) {
               <div >
                 <Grid container spacing={1} alignItems="flex-end" justify="center">
 
-                  {/* 'Search by image' icon grid item */}
+                  {/* 'Search image' icon grid item */}
                   <Grid item>
                     <ImageSearchIcon />
                   </Grid>
 
-                  {/* 'Search by image' text field grid item */}
+                  {/* 'Search by query' text field grid item */}
                   <Grid item>
                     <TextField 
-                    id="search" 
-                    label="Search" 
-                    placeholder="Please enter a search query" 
-                    InputLabelProps={{shrink: true,}} 
-                    style={{width: "500px"}} 
-                    onKeyUp={event=>search(event.target.value, true)}/>
+                     id="search" 
+                     label="Search" 
+                     placeholder="Please enter a search query" 
+                     InputLabelProps={{shrink: true,}} 
+                     style={{width: "500px"}} 
+                     onKeyUp={event => search(event.target.value, true)}/>
                     
                     {/* 'Search by image' input */}
                     <input 
-                    accept="image/jpg, image/svg, image/jpeg, image/png" 
-                    style={{display: "none"}} 
-                    id="icon-button-file" 
-                    type="file" 
-                    onChange={event=>label("", event.target.files[0], "", false)} />
+                     accept="image/jpg, image/svg, image/jpeg, image/png" 
+                     style={{display: "none"}} 
+                     id="icon-button-file" 
+                     type="file" 
+                     onChange={event => label("", event.target.files[0], "", false)} />
 
                     {/* 'Search by image' button label */}
                     <label htmlFor="icon-button-file">
@@ -639,18 +658,18 @@ export default function ResponsiveDrawer(props) {
             
             {/* Select file to upload */}
             <input 
-            type="file" 
-            id="selectFiles" 
-            accept="image/jpg, image/svg, image/jpeg, image/png" 
-            style={{display: "none"}} 
-            onChange={() => selectFiles(this)} />
+             type="file" 
+             id="selectFiles" 
+             accept="image/jpg, image/svg, image/jpeg, image/png" 
+             style={{display: "none"}} 
+             onChange={() => selectFiles(this)} />
 
             {/* Cloud icon for upload */}
             <Fab 
-            color="primary" 
-            aria-label="add" 
-            id="upload" 
-            onClick={() => {document.getElementById("selectFiles").click()}}>
+             color="primary" 
+             aria-label="add" 
+             id="upload" 
+             onClick={() => {document.getElementById("selectFiles").click()}}>
               <CloudUploadIcon /> 
             </Fab>        
           </Typography>
@@ -658,9 +677,9 @@ export default function ResponsiveDrawer(props) {
 
         {/* Right side drawer */}
         <Drawer 
-        anchor={"right"} 
-        open={state["right"]} 
-        onClose={toggleDrawer("right", false)}>
+         anchor={"right"} 
+         open={state["right"]} 
+         onClose={toggleDrawer("right", false)}>
           {list("right")}
         </Drawer>
       </div>
@@ -669,9 +688,9 @@ export default function ResponsiveDrawer(props) {
       processes at the bottom of the screen. */}
       {msg.disp && 
       <SnackBar 
-      message={msg.message} 
-      severity={msg.severity} o
-      nHome={() => {setMsg({disp: false})}} />}
+       message={msg.message} 
+       severity={msg.severity} 
+       onHome={() => {setMsg({disp: false})}} />}
     </div>
   );
 };
