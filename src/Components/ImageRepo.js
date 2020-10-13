@@ -1,4 +1,5 @@
-// Add hooks to handle the state and side effects in react functional component
+// Add useState and useEffect hooks to handle the state 
+// and side effects in react functional component
 import React, { useState, useEffect } from 'react';
 import SnackBar from './SnackBar';
 import Card from './Card';
@@ -49,9 +50,10 @@ import '@tensorflow/tfjs-backend-cpu';
 // Add utility for constructing className strings conditionally
 import clsx from 'clsx';
 
+// Image categories drawer panel width
 const drawerWidth = 240;
 
-// Styling of the components
+// Classes for components styling
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -101,8 +103,9 @@ export default function ResponsiveDrawer(props) {
   const classes = useStyles();
   const theme = useTheme();
   // Check to see if the script is being run in a web-page inside a web-browser
-  // if not - hide Image Categories panel
+  // if yes - display Image Categories panel in the body, if not - hide
   const container = window !== undefined ? () => window().document.body : undefined;
+
 
   // REACT STATE HOOKS
   // Let you use state and other React features without writing a class:
@@ -216,7 +219,7 @@ export default function ResponsiveDrawer(props) {
   };
 
 
-  // List Image Categories
+  // Display list of Image Categories
   const drawer = (
     <div>
       <div className={classes.toolbar} />
@@ -248,7 +251,7 @@ export default function ResponsiveDrawer(props) {
   );
 
 
-  // Right side slide drawer with image details
+  // Display slider drawer with image details
   const list = (anchor) => (
     <div className={clsx(classes.list, {
       [classes.fullList]: anchor === 'top' || anchor === 'bottom',})}>
@@ -545,10 +548,11 @@ export default function ResponsiveDrawer(props) {
         {/* Image Categories Panel */}
         <nav className={classes.drawer} aria-label="mailbox folders">
           {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-          {/* In the mobile view -> onClose */}
+
+          {/* In the mobile view -> temporary */}
           <Hidden smUp implementation="css">
             <Drawer
-              container={container}
+              container={container} 
               variant="temporary"
               anchor={theme.direction === 'rtl' ? 'right' : 'left'}
               open={mobileOpen}
@@ -557,18 +561,19 @@ export default function ResponsiveDrawer(props) {
                 paper: classes.drawerPaper,
               }}
               ModalProps={{
-                keepMounted: true, // Better open performance on mobile.
+                keepMounted: true, // better open performance on mobile
               }}>
-              {drawer}
+              {drawer} {/* displays list of Image Categories */}
             </Drawer>
           </Hidden>
+
           {/* In the web view -> permanent */}
           <Hidden xsDown implementation="css">
             <Drawer
              classes={{paper: classes.drawerPaper,}}
              variant="permanent"
              open>
-              {drawer}
+              {drawer} {/* displays list of Image Categories */}
             </Drawer>
           </Hidden>
         </nav>
@@ -675,7 +680,7 @@ export default function ResponsiveDrawer(props) {
           </Typography>
         </main>
 
-        {/* Right side drawer */}
+        {/* Slider drawer with image details */}
         <Drawer 
          anchor={"right"} 
          open={state["right"]} 
