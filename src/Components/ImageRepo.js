@@ -201,7 +201,7 @@ export default function ResponsiveDrawer(props) {
     }).catch(function(error) {
       console.log("Error getting document:", error);
     });
-  },[]);
+  },[]); // If you keep array empty effect will only run in mount and unmount
 
   // Use setMobileOpen to mutate the mobileOpen state
   const handleDrawerToggle = () => {
