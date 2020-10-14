@@ -295,26 +295,6 @@ export default function ResponsiveDrawer(props) {
   }
 
 
-  // Tesseract.js text recognition layer
-  // function ocr(url, file){
-  //   setProgress({disp: true, msg: "Performing OCR on the image!"});
-  //   console.log("hi from ocr()");
-  //   const worker = createWorker({
-  //     logger: m => console.log(m)
-  //   });
-
-  //   (async () => {
-  //   await worker.load();
-  //   await worker.loadLanguage('eng');
-  //   await worker.initialize('eng');
-  //   const { data: { text } } = await worker.recognize(url);
-  //   console.log(text);
-  //   await worker.terminate();
-  //   label(url, file, text, true);
-  //   })();
-  // }
-
-
   // Upload file to the Firebase storage and call label() on it
   // label() will classify image and upload image data to db
   function uploadFile(file){
@@ -326,9 +306,31 @@ export default function ResponsiveDrawer(props) {
       // console.log('Uploaded a blob or file!');
       ImageRef.getDownloadURL().then(function(url){
         // console.log(url);
-        label(url, file, "", true);
+        // label(url, file, "", true);
+        ocr(url, file);
       })
     });
+  }
+
+  
+  // Tesseract.js OCR (Optical character recognition) text recognition layer
+  function ocr(url, file){
+    setProgress({disp: true, msg: "Performing OCR on the image..."});
+    console.log("url", url);
+    console.log("hi from ocr()");
+    const worker = createWorker({
+      logger: m => console.log(m)
+    });
+
+    (async () => {
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    // const { data: { text } } = await worker.recognize(url);
+    await worker.terminate();
+    
+    label(url, file, "", true);
+    })();
   }
 
   
