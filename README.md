@@ -1,5 +1,6 @@
 # Imagify
 Welcome to Imagify, your own library of images, which helps you to add, delete and classify images into groups. The App is built using React.js, Node.js, Firebase Database and Authentication, Tesseract.js, Tensorflow.js, and Material-UI.  
+
 ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo.png)
 
 ## Implementation
