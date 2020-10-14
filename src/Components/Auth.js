@@ -27,7 +27,8 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-67.jpg)',
+    // backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-67.jpg)',
+    backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-68.jpg)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
