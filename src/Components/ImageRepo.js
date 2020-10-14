@@ -331,10 +331,10 @@ export default function ResponsiveDrawer(props) {
     await worker.load();
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
-    const { data: { text } } = await worker.recognize(img);
+    // const { data: { text } } = await worker.recognize(img);
     await worker.terminate();
     
-    label(url, file, text, true);
+    label(url, file, "", true);
     })();
   }
 
