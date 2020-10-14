@@ -42,6 +42,9 @@ export default firebaseConfig;
 | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo1.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo2.png)  |
 |---|---|
 | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo3.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo4.png)  |  
+|---|---|
+| ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo5.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo6.png)  | 
+
 
 ### Notes!
 - The app uses TensorflowJS MobileNet's pretrained model which only use browser resources instead of a GPU, so the performance may be a bit lower, as compared to **paid** cloud solutions like Google Cloud Vision, Amazon Rekognition or Azure Computer Vision.
