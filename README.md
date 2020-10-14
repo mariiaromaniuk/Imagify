@@ -13,10 +13,10 @@ Welcome to Imagify, your own library of images, which helps you to add, delete a
 - The images can be deleted from the library by clicking the `Delete` button corresponding to an image.
 - Information about images can be retreived by clicking the `Details` button corresponding to an image.
 
-## Use a production Version
+## Production Version
 The production version is hosted [here](https://image-repository-15136.web.app/)
 
-## Use the development Version
+## Development Version
 - Make sure, the latest version of Node and NPM are installed.
 - Clone the project.
 - Install the necessary NPM dependencies using `npm install`.
