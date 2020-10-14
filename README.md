@@ -1,5 +1,6 @@
 # Imagify
-Welcome to Imagify, your own library of images, which helps you to add, delete and classify images into groups! The App is built on top of ReactJS. 
+Welcome to Imagify, your own library of images, which helps you to add, delete and classify images into groups. The App is built using React.js, Node.js, Firebase Database and Authentication, Tesseract.js, Tensorflow.js, and Material-UI.  
+![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo.png)
 
 ## Algorithm/Features
 - The images chosen by a user are uploaded to Firebase Storage - Google Cloud Platform storage buckets. To choose an image, hover to the cloud button at the bottom right position.
@@ -38,9 +39,9 @@ export default firebaseConfig;
 - To start the project, use `npm start`.
 
 ## Screenshots
-| ![](https://)  | ![](https://)  |
+| ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo1.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo2.png)  |
 |---|---|
-| ![](https://)  | ![](https://)  |
+| ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo3.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo4.png)  |  
 
 ### Notes!
 - The app uses TensorflowJS MobileNet's pretrained model which only use browser resources instead of a GPU, so the performance may be a bit lower, as compared to **paid** cloud solutions like Google Cloud Vision, Amazon Rekognition or Azure Computer Vision.
