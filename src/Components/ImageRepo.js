@@ -322,14 +322,19 @@ export default function ResponsiveDrawer(props) {
       logger: m => console.log(m)
     });
 
+    // Convert a File() to Image() for Tesseract.js
+    var ur = URL.createObjectURL(file);
+    var img = new Image();                         
+    img.src = ur; 
+
     (async () => {
     await worker.load();
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
-    // const { data: { text } } = await worker.recognize(url);
+    const { data: { text } } = await worker.recognize(img);
     await worker.terminate();
     
-    label(url, file, "", true);
+    label(url, file, text, true);
     })();
   }
 
