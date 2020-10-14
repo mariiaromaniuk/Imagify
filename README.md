@@ -42,8 +42,7 @@ export default firebaseConfig;
 | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo1.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo4.png)  |
 |---|---|
 | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo3.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo2.png)  |  
-
-
+|---|---|
 | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo5.png)  | ![](https://github.com/mariiaromaniuk/Image-Repository/blob/master/images/demo6.png)  | 
 
 
