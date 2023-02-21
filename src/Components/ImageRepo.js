@@ -1,5 +1,3 @@
-// Add useState and useEffect hooks to handle the state 
-// and side effects in react functional component
 import React, { useState, useEffect } from 'react';
 import SnackBar from './SnackBar';
 import Card from './Card';
@@ -40,20 +38,16 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 
-// Tesseract.js - text recognition library
+// Add Tesseract.js - text recognition library
 import { createWorker } from 'tesseract.js';
-// TensorFlow.js - object ricognition library
+// Add TensorFlow.js - object ricognition library
 import * as mobilenet from '@tensorflow-models/mobilenet';
 // Adds the CPU backend to the global backend registry
 import '@tensorflow/tfjs-backend-cpu';
-
 // Add utility for constructing className strings conditionally
 import clsx from 'clsx';
 
-// Image categories drawer panel width
 const drawerWidth = 240;
-
-// Classes for components styling
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -102,29 +96,12 @@ export default function ResponsiveDrawer(props) {
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
-  // Check to see if the script is being run in a web-page inside a web-browser
-  // if yes - display Image Categories panel in the body, if not - hide
   const container = window !== undefined ? () => window().document.body : undefined;
 
-
-  // REACT STATE HOOKS
-  // Let you use state and other React features without writing a class:
-
-  // Declare new state variable mobileOpen and set it to false
-  // 'True' indicates that app is opened on mobile device and will ajust the drawer
-  // Use setMobileOpen to mutate the mobileOpen state
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
-  // Declare new state variable anchorEl and set it to null
   // Used for drop menu for user to sign out, closed by default
-  // Use setAnchorEl to mutate the anchorEl state
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-
-  // Data is for storing details of images:
-  // categories stores the labels of left sidebar, 
-  // state for right sidebar, 
-  // progress -> progress bar, msg -> trigger snackbar 
   const [data, setData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [state, setState] = useState({
@@ -148,9 +125,7 @@ export default function ResponsiveDrawer(props) {
     });
   };
   
-
-  // REACT EFFECT HOOK - similar to componentDidMount and componentDidUpdate:
-  // Load user data after component loads
+  // Load user data after component mounts
   useEffect(() => { 
     var db = firebase.firestore();
     var userId = firebase.auth().currentUser.uid;
@@ -199,21 +174,18 @@ export default function ResponsiveDrawer(props) {
           });
       }
     }).catch(function(error) {
-      console.log("Error getting document:", error);
+      console.error("Error getting document:", error);
     });
-  },[]); // If you keep array empty effect will only run in mount and unmount
+  },[]);
 
-  // Use setMobileOpen to mutate the mobileOpen state
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  // Use setAnchorEl to mutate sign out drop menu state
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Use setAnchorEl to mutate sign out drop menu state
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -285,8 +257,6 @@ export default function ResponsiveDrawer(props) {
     </div>
   );
 
-
-  // Select file to upload
   function selectFiles(){
     var files = document.getElementById("selectFiles").files;
     for (var i = 0; i < files.length; i++){
@@ -303,17 +273,14 @@ export default function ResponsiveDrawer(props) {
     var storageRef = firebase.storage().ref();
     var ImageRef = storageRef.child(userId + '/' + file.name);
     ImageRef.put(file).then(function(snapshot) {
-      // console.log('Uploaded a blob or file!');
       ImageRef.getDownloadURL().then(function(url){
-        // console.log(url);
-        // label(url, file, "", true);
         ocr(url, file);
       })
     });
   }
 
   
-  // Tesseract.js OCR (Optical character recognition) text recognition layer
+  // Tesseract.js OCR text recognition layer
   function ocr(url, file){
     setProgress({disp: true, msg: "Performing OCR on the image..."});
     console.log("url", url);
@@ -342,7 +309,6 @@ export default function ResponsiveDrawer(props) {
   // Label an image using Tensorflow mobilenet model and upload/search by its keywords
   async function label(url, file, text, searchType) {
     setProgress({disp: true, msg: "Classifying the image..."});
-    // console.log("hi from label()"); console.log(file);
 
     // Convert a File() to Image() for Tensorflow.js
     var ur = URL.createObjectURL(file),img = new Image();                         
@@ -350,11 +316,8 @@ export default function ResponsiveDrawer(props) {
         URL.revokeObjectURL(this.src);             
     };
     img.src = ur;  
-    // Load mobilenet model
     const model = await mobilenet.load();
-    // Classify the image
     const predictions = await model.classify(img);
-    // console.log(predictions);
 
     if (!searchType)
       // If this is a search by image
@@ -367,7 +330,6 @@ export default function ResponsiveDrawer(props) {
   
   // Upload data to Firebase
   function uploadData(url, file, text, predictions){
-    // console.log(url);console.log(text);console.log(predictions);
 
     // str is a string variable representing the class or 
     // space-separated classes of the predictions element.
@@ -388,6 +350,7 @@ export default function ResponsiveDrawer(props) {
       name: file.name,
       date: d
     };
+
     // Add new data to user data
     const tempData = [...data];
     tempData.push(temp);
@@ -399,12 +362,10 @@ export default function ResponsiveDrawer(props) {
     db.collection("images").doc(userId).set({
       img: tempData
     }).then(function() {
-      // console.log("Document successfully written!");
       setMsg({disp: true, severity: "success", message: "Data analysed successfully!"});
       setProgress({disp: false});
     })
     .catch(function(error) {
-      // console.error("Error writing document: ", error);
       setMsg({disp: true, severity: "error", message: "Error analysing image!"});
       setProgress({disp: false});
     });
@@ -414,7 +375,6 @@ export default function ResponsiveDrawer(props) {
   // Search image by predictions
   function searchImage(predictions){
     setProgress({disp: false});
-    // console.log(predictions);
     var searchStr = predictions[0].className;
     for (var i = 1; i < predictions.length;i ++)
        searchStr += ", " + predictions[i].className;
@@ -425,11 +385,10 @@ export default function ResponsiveDrawer(props) {
 
   // Returns all the items or only searched items
   function search(text, searchType){
-    // console.log(text);
     // returns an array-like object of all child elements of the given class
     var docs = document.getElementsByClassName("metadatasearch");
     var holder = document.getElementsByClassName("metadataholder");
-    // console.log(docs);
+
     for (var i = 0; i < docs.length; i++){
       // textContent gets the content of all elements
       // innerText only shows “human-readable” elements
@@ -461,7 +420,6 @@ export default function ResponsiveDrawer(props) {
 
   // Delete image from Firebase storage
   function deleteItem(index){
-    // console.log("hi from delete");
     var temp = [...data];
     var tempData = temp[index].name;
     temp.splice(index,1);
@@ -471,13 +429,11 @@ export default function ResponsiveDrawer(props) {
     db.collection("images").doc(userId).set({
       img: temp
     }).then(function() {
-      // console.log("Document successfully written!");
       firebase.storage().ref().child(userId + "/" + tempData).delete().then(function(){
         setMsg({disp: true, severity: "success", message: "Data deleted successfully!"});
       });
     })
     .catch(function(error) {
-    // console.error("Error writing document: ", error);
       setMsg({disp: true, severity: "error", message: "Data deletion unsuccessful"});
     });
   }
@@ -486,9 +442,8 @@ export default function ResponsiveDrawer(props) {
   // Sign out
   function signOut(){
     firebase.auth().signOut().then(function() {
-      // Sign-out successful
     }).catch(function(error) {
-      // An error happened
+      setMsg({disp: true, severity: "error", message: "Error signing out!"});
     });
   }
 
@@ -568,7 +523,7 @@ export default function ResponsiveDrawer(props) {
                 paper: classes.drawerPaper,
               }}
               ModalProps={{
-                keepMounted: true, // better open performance on mobile
+                keepMounted: true, 
               }}>
               {drawer} {/* displays list of Image Categories */}
             </Drawer>
