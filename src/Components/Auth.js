@@ -27,7 +27,6 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    // backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-67.jpg)',
     backgroundImage: 'url(https://content.foto.my.mail.ru/mail/vvv.mary/_myphoto/h-68.jpg)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
@@ -73,15 +72,11 @@ export default function SignInSide(){
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
     // Firebase authenticate using password-based accounts
     firebase.auth().signInWithEmailAndPassword(
-      // retrieve email
       document.getElementById("email").value, 
-      // retrieve password
       document.getElementById("password").value)
       .catch(function(error){
-      // handle errors here
       var errorCode = error.code;
       var errorMessage = error.message;
-      // progress bar
       setMsg({
         disp: true,
         message: errorMessage,
@@ -93,7 +88,6 @@ export default function SignInSide(){
 
   // Sign up a user for the app
   function register(){
-    // Check if passwords match
     if (document.getElementById("password").value !== document.getElementById("password1").value){
       setMsg({
         disp: true,
@@ -106,11 +100,8 @@ export default function SignInSide(){
     ReactDOM.render(<LinearProgress />, document.getElementById("progress"));
     // Firebase authenticate using password-based accounts
     firebase.auth().createUserWithEmailAndPassword(
-      // retrieve email
       document.getElementById("email").value, 
-      // retrieve password
       document.getElementById("password").value).catch(function(error){
-      // handle Errors here
       var errorCode = error.code;
       var errorMessage = error.message;
       setMsg({
@@ -124,9 +115,9 @@ export default function SignInSide(){
 
   // UI controller 
   function signUp(){
-    // mode true => sign in
+    // true => sign in
     if (mode) setMode(false);
-    // mode false => sign up
+    // false => sign up
     else setMode(true);
   }
 
