@@ -11,14 +11,11 @@ function App() {
   // Firebase Authentication State Change Listener
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
-      // User is signed in.
       ReactDOM.render(<ImageRepo />,document.getElementById("App"));
     } else {
-      // No user is signed in.
       ReactDOM.render(<Auth />,document.getElementById("App"));
     }
   });
-
   return (
     <div className="App" id="App"></div>
   );
